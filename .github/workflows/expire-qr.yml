@@ -1,0 +1,24 @@
+name: Expire QR Codes
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  expire:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Marcar QRs expirados
+        run: |
+          curl -s -X POST \
+            "${{ secrets.SUPABASE_URL }}/rest/v1/rpc/expire_qr_codes" \
+            -H "apikey: ${{ secrets.SUPABASE_SERVICE_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_KEY }}" \
+            -H "Content-Type: application/json"
+
+      - name: Enviar notificaciones de expiración
+        run: |
+          curl -s -X POST \
+            "${{ secrets.SUPABASE_URL }}/functions/v1/send-expiry-emails" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_KEY }}"
