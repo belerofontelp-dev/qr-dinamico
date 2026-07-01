@@ -4,11 +4,14 @@ import { useAuth } from '../hooks/useAuth';
 import { useQR } from '../hooks/useQR';
 import WhatsAppForm from '../components/PlatformForms/WhatsAppForm';
 import UrlForm from '../components/PlatformForms/UrlForm';
+import DriveForm from '../components/PlatformForms/DriveForm';
+import ExpiryConfig from '../components/ExpiryConfig/ExpiryConfig';
 import QRPreview from '../components/QREditor/QRPreview';
 
 const PLATFORM_FORMS = {
   whatsapp: { component: WhatsAppForm, label: 'WhatsApp' },
-  url: { component: UrlForm, label: 'URL genérica' }
+  url: { component: UrlForm, label: 'URL genérica' },
+  drive: { component: DriveForm, label: 'Google Drive' }
 };
 
 export default function CreateQR() {
@@ -19,6 +22,7 @@ export default function CreateQR() {
   const [platform, setPlatform] = useState('whatsapp');
   const [name, setName] = useState('');
   const [formData, setFormData] = useState({});
+  const [expiryData, setExpiryData] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [created, setCreated] = useState(null);
@@ -34,7 +38,7 @@ export default function CreateQR() {
     setError('');
 
     try {
-      const payload = { name, platform, ...formData };
+      const payload = { name, platform, ...formData, ...expiryData };
       const qr = await createQR(payload);
       setCreated(qr);
     } catch (err) {
@@ -130,6 +134,10 @@ export default function CreateQR() {
           </label>
 
           {FormComponent && <FormComponent onChange={handleFormChange} />}
+
+          <hr className="border-gray-200" />
+
+          <ExpiryConfig onChange={setExpiryData} />
 
           {error && <p className="text-sm text-red-600">{error}</p>}
 
