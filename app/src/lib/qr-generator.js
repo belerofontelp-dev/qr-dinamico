@@ -13,6 +13,8 @@ const DEFAULT_OPTIONS = {
 export function generateQRCode(data, options = {}) {
   return new QRCodeStyling({
     ...DEFAULT_OPTIONS,
+    width: options.width ?? DEFAULT_OPTIONS.width,
+    height: options.height ?? DEFAULT_OPTIONS.height,
     data,
     dotsOptions: {
       color: options.qrColor ?? DEFAULT_OPTIONS.dotsOptions.color,
