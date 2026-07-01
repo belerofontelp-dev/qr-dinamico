@@ -5,11 +5,20 @@ import { useQR } from '../hooks/useQR';
 import WhatsAppForm from '../components/PlatformForms/WhatsAppForm';
 import UrlForm from '../components/PlatformForms/UrlForm';
 import DriveForm from '../components/PlatformForms/DriveForm';
+import InstagramForm from '../components/PlatformForms/InstagramForm';
+import TelegramForm from '../components/PlatformForms/TelegramForm';
+import TwitterForm from '../components/PlatformForms/TwitterForm';
+import LinkedInForm from '../components/PlatformForms/LinkedInForm';
 import ExpiryConfig from '../components/ExpiryConfig/ExpiryConfig';
+import QRStyleEditor from '../components/QREditor/QRStyleEditor';
 import QRPreview from '../components/QREditor/QRPreview';
 
 const PLATFORM_FORMS = {
   whatsapp: { component: WhatsAppForm, label: 'WhatsApp' },
+  instagram: { component: InstagramForm, label: 'Instagram' },
+  telegram: { component: TelegramForm, label: 'Telegram' },
+  twitter: { component: TwitterForm, label: 'X / Twitter' },
+  linkedin: { component: LinkedInForm, label: 'LinkedIn' },
   url: { component: UrlForm, label: 'URL genérica' },
   drive: { component: DriveForm, label: 'Google Drive' }
 };
@@ -23,6 +32,7 @@ export default function CreateQR() {
   const [name, setName] = useState('');
   const [formData, setFormData] = useState({});
   const [expiryData, setExpiryData] = useState({});
+  const [styleData, setStyleData] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [created, setCreated] = useState(null);
@@ -38,7 +48,7 @@ export default function CreateQR() {
     setError('');
 
     try {
-      const payload = { name, platform, ...formData, ...expiryData };
+      const payload = { name, platform, ...formData, ...expiryData, ...styleData };
       const qr = await createQR(payload);
       setCreated(qr);
     } catch (err) {
@@ -138,6 +148,10 @@ export default function CreateQR() {
           <hr className="border-gray-200" />
 
           <ExpiryConfig onChange={setExpiryData} />
+
+          <hr className="border-gray-200" />
+
+          <QRStyleEditor onChange={setStyleData} />
 
           {error && <p className="text-sm text-red-600">{error}</p>}
 
