@@ -1,4 +1,4 @@
-name = "qr-redirect"
+name = "qr"
 main = "src/index.js"
 compatibility_date = "2025-01-01"
 

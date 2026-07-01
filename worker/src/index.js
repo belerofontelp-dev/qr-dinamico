@@ -59,33 +59,37 @@ export default {
       (qr.max_scans && qr.scan_count >= qr.max_scans);
 
     if (expired) {
-      fetch(`${env.SUPABASE_URL}/rest/v1/qr_codes?id=eq.${qr.id}`, {
-        method: 'PATCH',
+      try {
+        await fetch(`${env.SUPABASE_URL}/rest/v1/qr_codes?id=eq.${qr.id}`, {
+          method: 'PATCH',
+          headers: {
+            apikey: env.SUPABASE_KEY,
+            Authorization: `Bearer ${env.SUPABASE_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ status: 'expired', expired_at: now.toISOString() })
+        });
+      } catch {}
+      return Response.redirect(`${env.APP_URL}/expired?id=${qr.id}`, 302);
+    }
+
+    try {
+      await fetch(`${env.SUPABASE_URL}/rest/v1/qr_scans`, {
+        method: 'POST',
         headers: {
           apikey: env.SUPABASE_KEY,
           Authorization: `Bearer ${env.SUPABASE_KEY}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ status: 'expired', expired_at: now.toISOString() })
+        body: JSON.stringify({
+          qr_id: qr.id,
+          user_agent: request.headers.get('user-agent'),
+          country: request.cf?.country || null,
+          city: request.cf?.city || null,
+          scanned_at: now.toISOString()
+        })
       });
-      return Response.redirect(`${env.APP_URL}/expired?id=${qr.id}`, 302);
-    }
-
-    fetch(`${env.SUPABASE_URL}/rest/v1/qr_scans`, {
-      method: 'POST',
-      headers: {
-        apikey: env.SUPABASE_KEY,
-        Authorization: `Bearer ${env.SUPABASE_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        qr_id: qr.id,
-        user_agent: request.headers.get('user-agent'),
-        country: request.cf?.country || null,
-        city: request.cf?.city || null,
-        scanned_at: now.toISOString()
-      })
-    });
+    } catch {}
 
     return Response.redirect(qr.destination_url, 302);
   }
