@@ -1,10 +1,44 @@
 // Cloudflare Worker — Motor de redirección de QRs dinámicos
 // Recibe GET /q/:slug, consulta Supabase, verifica caducidad, redirige.
+
+const RATE_LIMIT = new Map();
+
+function isRateLimited(ip) {
+  const now = Date.now();
+  const window = now - 60_000;
+
+  if (!RATE_LIMIT.has(ip)) {
+    RATE_LIMIT.set(ip, [now]);
+    return false;
+  }
+
+  const timestamps = RATE_LIMIT.get(ip).filter(t => t > window);
+  timestamps.push(now);
+  RATE_LIMIT.set(ip, timestamps);
+
+  if (timestamps.length > 100) {
+    return true;
+  }
+
+  if (RATE_LIMIT.size > 5000) {
+    for (const [key, ts] of RATE_LIMIT) {
+      if (ts.every(t => t <= window)) RATE_LIMIT.delete(key);
+    }
+  }
+
+  return false;
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const slug = url.pathname.split('/q/')[1];
     if (!slug) return new Response('Not found', { status: 404 });
+
+    const ip = request.headers.get('cf-connecting-ip') || 'unknown';
+    if (isRateLimited(ip)) {
+      return new Response('Demasiadas solicitudes', { status: 429 });
+    }
 
     const { data: qr } = await fetch(
       `${env.SUPABASE_URL}/rest/v1/qr_codes?slug=eq.${slug}&select=*`,

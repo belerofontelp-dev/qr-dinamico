@@ -16,7 +16,7 @@ export default function Landing() {
           Comenzar
         </Link>
         <a
-          href="https://github.com/tuusuario/qr-dinamico"
+            href="https://github.com/belerofontelp-dev/qr-dinamico"
           className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition"
         >
           GitHub
