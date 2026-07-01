@@ -44,6 +44,7 @@ test-results/
 
 # Documentacion
 docs/
+fase0-configuracion.txt
 
 # Misc
 *.pem

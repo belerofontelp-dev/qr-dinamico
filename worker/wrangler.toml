@@ -3,4 +3,4 @@ main = "src/index.js"
 compatibility_date = "2025-01-01"
 
 [vars]
-APP_URL = "https://tuusuario.github.io/qr-dinamico"
+APP_URL = "https://belerofontelp-dev.github.io/qr-dinamico"

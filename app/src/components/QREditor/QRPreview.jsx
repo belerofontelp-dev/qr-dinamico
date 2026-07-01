@@ -1,0 +1,65 @@
+import { useEffect, useRef, useState } from 'react';
+import { generateQRCode, renderQRCode, downloadQRPNG, downloadQRSVG } from '../../lib/qr-generator';
+
+export default function QRPreview({ shortlink, qrColor, qrBgColor, qrStyle }) {
+  const containerRef = useRef(null);
+  const qrRef = useRef(null);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!shortlink || !containerRef.current) return;
+    qrRef.current = generateQRCode(shortlink, { qrColor, qrBgColor, qrStyle });
+    renderQRCode(qrRef.current, containerRef.current);
+  }, [shortlink, qrColor, qrBgColor, qrStyle]);
+
+  const handleCopy = async () => {
+    if (!shortlink) return;
+    try {
+      await navigator.clipboard.writeText(shortlink);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setCopied(false);
+    }
+  };
+
+  if (!shortlink) return null;
+
+  return (
+    <div className="flex flex-col items-center gap-4">
+      <div ref={containerRef} className="bg-white p-4 rounded-lg border border-gray-200" />
+
+      <div className="w-full max-w-xs flex items-center gap-2">
+        <input
+          type="text"
+          readOnly
+          value={shortlink}
+          className="flex-1 text-xs bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-gray-600 truncate"
+        />
+        <button
+          onClick={handleCopy}
+          className={`shrink-0 px-3 py-2 text-xs font-medium rounded-lg transition ${
+            copied ? 'bg-green-600 text-white' : 'bg-black text-white hover:bg-gray-800'
+          }`}
+        >
+          {copied ? 'Copiado' : 'Copiar'}
+        </button>
+      </div>
+
+      <div className="flex gap-2">
+        <button
+          onClick={() => downloadQRPNG(qrRef.current)}
+          className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition text-sm"
+        >
+          Descargar PNG
+        </button>
+        <button
+          onClick={() => downloadQRSVG(qrRef.current)}
+          className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition text-sm"
+        >
+          Descargar SVG
+        </button>
+      </div>
+    </div>
+  );
+}
