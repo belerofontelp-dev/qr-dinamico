@@ -4,15 +4,26 @@
 import { serve } from 'https://deno.land/std/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js';
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, OPTIONS',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+function jsonResponse(body: string, status = 200) {
+  return new Response(body, { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+}
+
 serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
+  }
+
   const url = new URL(req.url);
   const qrId = url.searchParams.get('qr_id');
 
   if (!qrId) {
-    return new Response(JSON.stringify({ error: 'qr_id es requerido' }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return jsonResponse(JSON.stringify({ error: 'qr_id es requerido' }), 400);
   }
 
   const supabase = createClient(
@@ -73,13 +84,11 @@ serve(async (req) => {
     .map(([country, scans]) => ({ country, scans }))
     .sort((a, b) => b.scans - a.scans);
 
-  return new Response(JSON.stringify({
+  return jsonResponse(JSON.stringify({
     total_scans: total_scans || 0,
     today: today_scans || 0,
     this_week: week_scans || 0,
     by_country,
     timeline
-  }), {
-    headers: { 'Content-Type': 'application/json' }
-  });
+  }));
 });

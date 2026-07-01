@@ -3,18 +3,29 @@
 
 import { serve } from 'https://deno.land/std/http/server.ts';
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+function jsonResponse(body: string, status = 200) {
+  return new Response(body, { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+}
+
 serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
+  }
+
   if (req.method !== 'POST') {
-    return new Response('Method not allowed', { status: 405 });
+    return new Response('Method not allowed', { status: 405, headers: corsHeaders });
   }
 
   const { file_base64, file_name, mime_type, access_token } = await req.json();
 
   if (!file_base64 || !file_name || !access_token) {
-    return new Response(JSON.stringify({ error: 'file_base64, file_name y access_token son requeridos' }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return jsonResponse(JSON.stringify({ error: 'file_base64, file_name y access_token son requeridos' }), 400);
   }
 
   // Encontrar o crear carpeta QRApp
@@ -64,10 +75,7 @@ serve(async (req) => {
   const driveFile = await uploadRes.json();
 
   if (!driveFile.id) {
-    return new Response(JSON.stringify({ error: 'Error al subir el archivo', detail: driveFile }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return jsonResponse(JSON.stringify({ error: 'Error al subir el archivo', detail: driveFile }), 500);
   }
 
   // Hacer público (cualquiera con el link puede ver)
@@ -83,11 +91,9 @@ serve(async (req) => {
     }
   );
 
-  return new Response(JSON.stringify({
+  return jsonResponse(JSON.stringify({
     file_id: driveFile.id,
     view_url: driveFile.webViewLink,
     direct_url: `https://drive.google.com/uc?id=${driveFile.id}&export=download`
-  }), {
-    headers: { 'Content-Type': 'application/json' }
-  });
+  }));
 });
