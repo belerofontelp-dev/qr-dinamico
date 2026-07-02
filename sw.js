@@ -1,5 +1,5 @@
 const CACHE = 'qr-dinamico-v1';
-const ASSETS = ['/', '/dashboard', '/login'];
+const ASSETS = ['/qr-dinamico/', '/qr-dinamico/dashboard', '/qr-dinamico/login'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
