@@ -3,6 +3,7 @@
 
 import { serve } from 'https://deno.land/std/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js';
+import { buildDestinationUrl } from '../_shared/qr-utils.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -19,32 +20,9 @@ function generateSlug(length = 6): string {
   return Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
 }
 
-function buildDestinationUrl(platform: string, config: Record<string, string>): string {
-  switch (platform) {
-    case 'whatsapp': {
-      const wa = `https://wa.me/${config.phone}`;
-      return config.message ? `${wa}?text=${encodeURIComponent(config.message)}` : wa;
-    }
-    case 'instagram':
-      return config.mode === 'post'
-        ? `https://instagram.com/p/${config.post_id}`
-        : `https://instagram.com/${config.username}`;
-    case 'telegram':
-      return config.mode === 'invite'
-        ? `https://t.me/+${config.invite_hash}`
-        : `https://t.me/${config.username}`;
-    case 'twitter':
-      return config.mode === 'tweet'
-        ? `https://twitter.com/intent/tweet?text=${encodeURIComponent(config.text || '')}${config.url ? `&url=${encodeURIComponent(config.url)}` : ''}`
-        : `https://twitter.com/${config.username}`;
-    case 'linkedin':
-      return config.mode === 'company'
-        ? `https://linkedin.com/company/${config.company}`
-        : `https://linkedin.com/in/${config.username}`;
-    case 'url':
-    default:
-      return config.url || 'https://ejemplo.com';
-  }
+function generateSlug(length = 6): string {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  return Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
 }
 
 serve(async (req) => {
@@ -74,10 +52,18 @@ serve(async (req) => {
   }
 
   const body = await req.json();
-  const { name, platform, ...config } = body;
+  const name = body.name as string;
+  const platform = body.platform as string;
 
   if (!name || !platform) {
     return jsonResponse(JSON.stringify({ error: 'name y platform son requeridos' }), 400);
+  }
+
+  const config: Record<string, string> = {};
+  for (const [k, v] of Object.entries(body)) {
+    if (!['name', 'platform', 'expires_at', 'max_scans', 'qr_color', 'qr_bg_color', 'qr_style'].includes(k) && v !== undefined) {
+      config[k] = String(v);
+    }
   }
 
   const destination_url = buildDestinationUrl(platform, config);
@@ -98,6 +84,7 @@ serve(async (req) => {
       name,
       platform,
       destination_url,
+      config,
       expires_at: body.expires_at || null,
       max_scans: body.max_scans || null,
       qr_color: body.qr_color || '#000000',
@@ -119,6 +106,7 @@ serve(async (req) => {
     slug: qr.slug,
     shortlink: `${workerUrl}/q/${qr.slug}`,
     destination_url: qr.destination_url,
+    config: qr.config,
     platform: qr.platform,
     qr_color: qr.qr_color,
     qr_bg_color: qr.qr_bg_color,

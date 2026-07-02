@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 
-export default function TwitterForm({ onChange }) {
-  const [mode, setMode] = useState('profile');
-  const [username, setUsername] = useState('');
-  const [text, setText] = useState('');
-  const [tweetUrl, setTweetUrl] = useState('');
+export default function TwitterForm({ onChange, initial }) {
+  const [mode, setMode] = useState(initial?.mode || 'profile');
+  const [username, setUsername] = useState(initial?.username || '');
+  const [text, setText] = useState(initial?.text || '');
+  const [tweetUrl, setTweetUrl] = useState(initial?.url || '');
 
   useEffect(() => {
     if (onChange) {

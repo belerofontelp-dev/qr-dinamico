@@ -5,6 +5,7 @@ import { useQR } from '../hooks/useQR';
 import { logout } from '../lib/supabase';
 import { PLATFORMS } from '../lib/platforms';
 import QRPreview from '../components/QREditor/QRPreview';
+import { generateQRCode, downloadQRPNG, downloadQRSVG } from '../lib/qr-generator';
 
 const FILTROS = [
   { value: 'all', label: 'Todos' },
@@ -183,6 +184,18 @@ function QRCard({ qr, onDelete }) {
     }
   };
 
+  const handleDownload = (extension) => {
+    const code = generateQRCode(shortlink, {
+      qrColor: qr.qr_color ?? '#000000',
+      qrBgColor: qr.qr_bg_color ?? '#FFFFFF',
+      qrStyle: qr.qr_style ?? 'square',
+      width: 1024,
+      height: 1024
+    });
+    if (extension === 'png') downloadQRPNG(code, `qr-${qr.slug}`);
+    else downloadQRSVG(code, `qr-${qr.slug}`);
+  };
+
   const statusColors = {
     active: 'bg-green-100 text-green-800',
     paused: 'bg-yellow-100 text-yellow-800',
@@ -233,7 +246,19 @@ function QRCard({ qr, onDelete }) {
         >
           {copied ? 'Copiado' : 'Copiar link'}
         </button>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => handleDownload('png')}
+            className="text-xs font-medium px-2 py-1.5 bg-black text-white rounded-lg hover:bg-gray-800 transition"
+          >
+            PNG
+          </button>
+          <button
+            onClick={() => handleDownload('svg')}
+            className="text-xs font-medium px-2 py-1.5 border border-gray-300 rounded-lg hover:bg-gray-100 transition"
+          >
+            SVG
+          </button>
           <Link
             to={`/edit/${qr.id}`}
             className="text-xs font-medium text-blue-600 hover:underline px-2 py-1.5"

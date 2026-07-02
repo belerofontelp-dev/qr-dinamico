@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
-export default function UrlForm({ onChange }) {
-  const [url, setUrl] = useState('');
+export default function UrlForm({ onChange, initial }) {
+  const [url, setUrl] = useState(initial?.url || '');
   const [error, setError] = useState('');
 
   useEffect(() => {

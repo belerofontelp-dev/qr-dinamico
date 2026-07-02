@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 
-export default function InstagramForm({ onChange }) {
-  const [mode, setMode] = useState('profile');
-  const [username, setUsername] = useState('');
-  const [postId, setPostId] = useState('');
+export default function InstagramForm({ onChange, initial }) {
+  const [mode, setMode] = useState(initial?.mode || 'profile');
+  const [username, setUsername] = useState(initial?.username || '');
+  const [postId, setPostId] = useState(initial?.post_id || '');
 
   useEffect(() => {
     if (onChange) {

@@ -2,10 +2,28 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { PLATFORMS } from '../lib/platforms';
+import { parseDestinationUrl } from '../lib/qr-utils';
 import AnalyticsDashboard from '../components/Analytics/AnalyticsDashboard';
 import QRStyleEditor from '../components/QREditor/QRStyleEditor';
 import QRPreview from '../components/QREditor/QRPreview';
 import ExpiryConfig from '../components/ExpiryConfig/ExpiryConfig';
+import WhatsAppForm from '../components/PlatformForms/WhatsAppForm';
+import UrlForm from '../components/PlatformForms/UrlForm';
+import DriveForm from '../components/PlatformForms/DriveForm';
+import InstagramForm from '../components/PlatformForms/InstagramForm';
+import TelegramForm from '../components/PlatformForms/TelegramForm';
+import TwitterForm from '../components/PlatformForms/TwitterForm';
+import LinkedInForm from '../components/PlatformForms/LinkedInForm';
+
+const PLATFORM_FORMS = {
+  whatsapp: WhatsAppForm,
+  instagram: InstagramForm,
+  telegram: TelegramForm,
+  twitter: TwitterForm,
+  linkedin: LinkedInForm,
+  url: UrlForm,
+  drive: DriveForm
+};
 
 const TABS = [
   { value: 'config', label: 'Configuración' },
@@ -20,6 +38,7 @@ export default function EditQR() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [saved, setSaved] = useState(false);
+  const [platformConfig, setPlatformConfig] = useState({});
 
   const [form, setForm] = useState({
     name: '',
@@ -50,6 +69,8 @@ export default function EditQR() {
             max_scans: data.max_scans || null,
             status: data.status || 'active'
           });
+          const cfg = data.config || parseDestinationUrl(data.platform, data.destination_url);
+          setPlatformConfig(cfg);
         }
         setLoading(false);
       });
@@ -60,30 +81,43 @@ export default function EditQR() {
     setError('');
     setSaved(false);
 
-    const updates = {
-      name: form.name,
-      qr_color: form.qr_color,
-      qr_bg_color: form.qr_bg_color,
-      qr_style: form.qr_style,
-      expires_at: form.expires_at,
-      max_scans: form.max_scans,
-      status: form.status,
-      updated_at: new Date().toISOString()
-    };
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/update-qr?id=${id}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify({
+            name: form.name,
+            config: platformConfig,
+            qr_color: form.qr_color,
+            qr_bg_color: form.qr_bg_color,
+            qr_style: form.qr_style,
+            expires_at: form.expires_at,
+            max_scans: form.max_scans,
+            status: form.status
+          })
+        }
+      );
 
-    const { error: updateError } = await supabase
-      .from('qr_codes')
-      .update(updates)
-      .eq('id', id);
+      if (!res.ok) {
+        const { error: errMsg } = await res.json();
+        throw new Error(errMsg || 'Error al actualizar QR');
+      }
 
-    if (updateError) {
-      setError(updateError.message);
-    } else {
-      setQr(prev => ({ ...prev, ...updates }));
+      const updated = await res.json();
+      setQr(prev => ({ ...prev, ...updated }));
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   };
 
   const updateForm = (updates) => {
@@ -110,6 +144,7 @@ export default function EditQR() {
 
   const platform = PLATFORMS[qr.platform] || PLATFORMS.url;
   const shortlink = `${import.meta.env.VITE_WORKER_URL}/q/${qr.slug}`;
+  const PlatformForm = PLATFORM_FORMS[qr.platform] || UrlForm;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -157,6 +192,18 @@ export default function EditQR() {
                   className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
                 />
               </label>
+
+              <div className="p-4 bg-gray-50 rounded-lg space-y-4">
+                <h3 className="text-sm font-semibold">Contenido ({platform.label})</h3>
+                <PlatformForm
+                  onChange={(cfg) => {
+                    setPlatformConfig(cfg);
+                    setSaved(false);
+                  }}
+                  initial={platformConfig}
+                  key={qr.platform}
+                />
+              </div>
 
               <QRStyleEditor
                 onChange={(data) => updateForm(data)}

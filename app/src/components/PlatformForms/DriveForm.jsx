@@ -2,10 +2,10 @@ import { useState, useRef, useEffect } from 'react';
 import { uploadFile, getOrCreateFolder } from '../../lib/drive';
 import { getGoogleAccessToken } from '../../lib/supabase';
 
-export default function DriveForm({ onChange }) {
+export default function DriveForm({ onChange, initial }) {
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
-  const [uploaded, setUploaded] = useState(null);
+  const [uploaded, setUploaded] = useState(initial?.drive_url ? { file_id: initial.drive_file_id, direct_url: initial.drive_url } : null);
   const [error, setError] = useState('');
   const fileRef = useRef(null);
 

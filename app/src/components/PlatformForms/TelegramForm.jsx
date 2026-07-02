@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 
-export default function TelegramForm({ onChange }) {
-  const [mode, setMode] = useState('user');
-  const [username, setUsername] = useState('');
-  const [inviteHash, setInviteHash] = useState('');
+export default function TelegramForm({ onChange, initial }) {
+  const [mode, setMode] = useState(initial?.mode || 'user');
+  const [username, setUsername] = useState(initial?.username || '');
+  const [inviteHash, setInviteHash] = useState(initial?.invite_hash || '');
 
   useEffect(() => {
     if (onChange) {

@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 
-export default function LinkedInForm({ onChange }) {
-  const [mode, setMode] = useState('profile');
-  const [username, setUsername] = useState('');
-  const [company, setCompany] = useState('');
+export default function LinkedInForm({ onChange, initial }) {
+  const [mode, setMode] = useState(initial?.mode || 'profile');
+  const [username, setUsername] = useState(initial?.username || '');
+  const [company, setCompany] = useState(initial?.company || '');
 
   useEffect(() => {
     if (onChange) {

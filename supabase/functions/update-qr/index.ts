@@ -3,6 +3,7 @@
 
 import { serve } from 'https://deno.land/std/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js';
+import { buildDestinationUrl } from '../_shared/qr-utils.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -48,9 +49,22 @@ serve(async (req) => {
   const body = await req.json();
   const updates: Record<string, unknown> = {};
   const allowed = ['destination_url', 'expires_at', 'max_scans', 'status', 'name',
-                    'qr_color', 'qr_bg_color', 'qr_style', 'qr_logo_url'];
+                    'qr_color', 'qr_bg_color', 'qr_style', 'qr_logo_url', 'config'];
   for (const key of allowed) {
     if (key in body) updates[key] = body[key];
+  }
+
+  if (updates.config && !updates.destination_url) {
+    const { data: current } = await supabase
+      .from('qr_codes')
+      .select('platform')
+      .eq('id', qrId)
+      .eq('user_id', user.id)
+      .single();
+
+    if (current) {
+      updates.destination_url = buildDestinationUrl(current.platform, updates.config as Record<string, string>);
+    }
   }
 
   if (Object.keys(updates).length === 0) {

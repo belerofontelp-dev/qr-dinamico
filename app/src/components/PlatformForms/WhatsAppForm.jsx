@@ -13,10 +13,23 @@ const PAISES = [
   { code: '34', name: 'España', flag: '🇪🇸' }
 ];
 
-export default function WhatsAppForm({ onChange }) {
-  const [pais, setPais] = useState('54');
-  const [numero, setNumero] = useState('');
-  const [mensaje, setMensaje] = useState('');
+function detectCountry(phone) {
+  const sorted = [...PAISES].sort((a, b) => b.code.length - a.code.length);
+  for (const p of sorted) {
+    if (phone.startsWith(p.code)) return p.code;
+  }
+  return '54';
+}
+
+function stripCountry(phone) {
+  const code = detectCountry(phone);
+  return phone.slice(code.length);
+}
+
+export default function WhatsAppForm({ onChange, initial }) {
+  const [pais, setPais] = useState(initial?.phone ? detectCountry(initial.phone) : '54');
+  const [numero, setNumero] = useState(initial?.phone ? stripCountry(initial.phone) : '');
+  const [mensaje, setMensaje] = useState(initial?.message || '');
 
   useEffect(() => {
     if (onChange) {
