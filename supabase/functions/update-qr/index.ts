@@ -48,8 +48,14 @@ serve(async (req) => {
 
   const body = await req.json();
   const updates: Record<string, unknown> = {};
-  const allowed = ['destination_url', 'expires_at', 'max_scans', 'status', 'name',
-                    'qr_color', 'qr_bg_color', 'qr_style', 'qr_logo_url', 'config'];
+  const allowed = [
+    'destination_url', 'expires_at', 'max_scans', 'status', 'name', 'config',
+    'qr_color', 'qr_bg_color', 'qr_style',
+    'qr_corners_style', 'qr_corners_dot_style',
+    'qr_frame_style', 'qr_frame_text', 'qr_frame_text_color',
+    'qr_frame_bg_color', 'qr_frame_border_color',
+    'qr_image_size', 'qr_image_margin', 'qr_error_correction', 'qr_logo_path'
+  ];
   for (const key of allowed) {
     if (key in body) updates[key] = body[key];
   }

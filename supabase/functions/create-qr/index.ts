@@ -54,9 +54,17 @@ serve(async (req) => {
     return jsonResponse(JSON.stringify({ error: 'name y platform son requeridos' }), 400);
   }
 
+  const DESIGN_FIELDS = [
+    'qr_color', 'qr_bg_color', 'qr_style',
+    'qr_corners_style', 'qr_corners_dot_style',
+    'qr_frame_style', 'qr_frame_text', 'qr_frame_text_color',
+    'qr_frame_bg_color', 'qr_frame_border_color',
+    'qr_image_size', 'qr_image_margin', 'qr_error_correction', 'qr_logo_path'
+  ];
+
   const config: Record<string, string> = {};
   for (const [k, v] of Object.entries(body)) {
-    if (!['name', 'platform', 'expires_at', 'max_scans', 'qr_color', 'qr_bg_color', 'qr_style'].includes(k) && v !== undefined) {
+    if (!['name', 'platform', 'expires_at', 'max_scans', ...DESIGN_FIELDS].includes(k) && v !== undefined) {
       config[k] = String(v);
     }
   }
@@ -85,6 +93,17 @@ serve(async (req) => {
       qr_color: body.qr_color || '#000000',
       qr_bg_color: body.qr_bg_color || '#FFFFFF',
       qr_style: body.qr_style || 'square',
+      qr_corners_style: body.qr_corners_style || 'square',
+      qr_corners_dot_style: body.qr_corners_dot_style || 'square',
+      qr_frame_style: body.qr_frame_style || 'none',
+      qr_frame_text: body.qr_frame_text ?? 'Scan me',
+      qr_frame_text_color: body.qr_frame_text_color || '#000000',
+      qr_frame_bg_color: body.qr_frame_bg_color || '#FFFFFF',
+      qr_frame_border_color: body.qr_frame_border_color || '#000000',
+      qr_image_size: body.qr_image_size ?? 0.4,
+      qr_image_margin: body.qr_image_margin ?? 0,
+      qr_error_correction: body.qr_error_correction || 'H',
+      qr_logo_path: body.qr_logo_path || null,
       status: 'active'
     })
     .select()
@@ -106,6 +125,17 @@ serve(async (req) => {
     qr_color: qr.qr_color,
     qr_bg_color: qr.qr_bg_color,
     qr_style: qr.qr_style,
+    qr_corners_style: qr.qr_corners_style,
+    qr_corners_dot_style: qr.qr_corners_dot_style,
+    qr_frame_style: qr.qr_frame_style,
+    qr_frame_text: qr.qr_frame_text,
+    qr_frame_text_color: qr.qr_frame_text_color,
+    qr_frame_bg_color: qr.qr_frame_bg_color,
+    qr_frame_border_color: qr.qr_frame_border_color,
+    qr_image_size: qr.qr_image_size,
+    qr_image_margin: qr.qr_image_margin,
+    qr_error_correction: qr.qr_error_correction,
+    qr_logo_path: qr.qr_logo_path,
     created_at: qr.created_at
   }));
 });
