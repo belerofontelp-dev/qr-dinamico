@@ -1,0 +1,204 @@
+DEPLOY DE NUEVAS FUNCIONALIDADES DE DISEÑO QR
+==============================================
+
+Este documento resume todos los pasos necesarios para actualizar la aplicacion
+con las nuevas funcionalidades: frames, QR Code Pattern, QR Code Corners,
+logo central y personalizacion avanzada.
+
+
+1. SUBIR CAMBIOS AL REPOSITORIO
+--------------------------------
+
+Si estas trabajando en la rama dev-mejoras:
+
+    git push origin dev-mejoras
+
+Luego mergear a master (crear PR o merge manual):
+
+    git checkout master
+    git merge dev-mejoras
+    git push origin master
+
+El deploy del frontend a GitHub Pages es automatico al hacer push a master.
+
+
+2. APLICAR MIGRACION DE BASE DE DATOS
+--------------------------------------
+
+Opcion A - Con Supabase CLI:
+
+    supabase db push
+
+Opcion B - SQL manual en Supabase Studio (SQL Editor):
+
+    ALTER TABLE qr_codes
+      ADD COLUMN IF NOT EXISTS qr_corners_style      TEXT DEFAULT 'square',
+      ADD COLUMN IF NOT EXISTS qr_corners_dot_style  TEXT DEFAULT 'square',
+      ADD COLUMN IF NOT EXISTS qr_frame_style        TEXT DEFAULT 'none',
+      ADD COLUMN IF NOT EXISTS qr_frame_text         TEXT DEFAULT 'Scan me',
+      ADD COLUMN IF NOT EXISTS qr_frame_text_color   TEXT DEFAULT '#000000',
+      ADD COLUMN IF NOT EXISTS qr_frame_bg_color     TEXT DEFAULT '#FFFFFF',
+      ADD COLUMN IF NOT EXISTS qr_frame_border_color TEXT DEFAULT '#000000',
+      ADD COLUMN IF NOT EXISTS qr_image_size         NUMERIC DEFAULT 0.4,
+      ADD COLUMN IF NOT EXISTS qr_image_margin       INTEGER DEFAULT 0,
+      ADD COLUMN IF NOT EXISTS qr_error_correction   TEXT DEFAULT 'H',
+      ADD COLUMN IF NOT EXISTS qr_logo_path          TEXT;
+
+Esta migracion agrega valores por defecto, por lo que los QR existentes
+continuaran funcionando sin cambios visuales.
+
+
+3. CREAR BUCKET DE STORAGE PARA LOGOS
+--------------------------------------
+
+Opcion A - Con Supabase CLI:
+
+    supabase storage bucket create qr-logos --public true
+    supabase storage bucket update qr-logos --file-size-limit 2MiB --allowed-mime-types "image/png,image/jpeg,image/svg+xml,image/webp"
+
+Opcion B - SQL manual en Supabase Studio:
+
+    INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+    VALUES (
+      'qr-logos',
+      'qr-logos',
+      true,
+      2097152,
+      ARRAY['image/png', 'image/jpeg', 'image/svg+xml', 'image/webp']
+    )
+    ON CONFLICT (id) DO UPDATE SET
+      public = EXCLUDED.public,
+      file_size_limit = EXCLUDED.file_size_limit,
+      allowed_mime_types = EXCLUDED.allowed_mime_types;
+
+
+4. CONFIGURAR POLITICAS DE STORAGE
+-----------------------------------
+
+Ejecutar en Supabase Studio (SQL Editor):
+
+    -- Usuarios autenticados pueden subir logos en su propia carpeta
+    CREATE POLICY "Usuarios pueden subir sus logos"
+      ON storage.objects
+      FOR INSERT
+      TO authenticated
+      WITH CHECK (bucket_id = 'qr-logos' AND (storage.foldername(name))[1] = auth.uid()::text);
+
+    -- Cualquiera puede ver logos publicos
+    CREATE POLICY "Usuarios pueden ver logos publicos"
+      ON storage.objects
+      FOR SELECT
+      TO authenticated, anon
+      USING (bucket_id = 'qr-logos');
+
+    -- Usuarios autenticados pueden eliminar sus logos
+    CREATE POLICY "Usuarios pueden eliminar sus logos"
+      ON storage.objects
+      FOR DELETE
+      TO authenticated
+      USING (bucket_id = 'qr-logos' AND (storage.foldername(name))[1] = auth.uid()::text);
+
+
+5. CONFIGURAR CORS EN STORAGE
+------------------------------
+
+Si el logo no se renderiza en el QR, es necesario configurar CORS en el bucket.
+
+En Supabase Studio:
+- Ir a Storage
+- Seleccionar el bucket qr-logos
+- Ir a la pestana Policies o CORS
+- Agregar los origenes permitidos:
+
+    http://localhost:5173
+    https://TU_USUARIO.github.io
+
+O via SQL:
+
+    -- Nota: la configuracion de CORS varia segun la version de Supabase.
+    -- Lo mas confiable es configurarlo desde el panel de Storage.
+
+
+6. DEPLOYAR EDGE FUNCTIONS
+---------------------------
+
+Ejecutar en la terminal:
+
+    supabase functions deploy create-qr
+    supabase functions deploy update-qr
+    supabase functions deploy upload-qr-logo
+
+Verificar que estas variables de entorno esten configuradas en Supabase:
+
+    SUPABASE_URL
+    SUPABASE_SERVICE_ROLE_KEY
+    WORKER_URL
+
+
+7. VERIFICAR CONFIGURACION LOCAL
+---------------------------------
+
+Para desarrollo local, asegurarse de que el archivo app/.env tenga:
+
+    VITE_SUPABASE_URL=https://xxxx.supabase.co
+    VITE_SUPABASE_ANON_KEY=eyJ...
+    VITE_WORKER_URL=https://qr.xxxx.workers.dev
+    VITE_APP_URL=https://usuario.github.io/qr-dinamico
+
+
+8. PROBAR FUNCIONALIDAD
+------------------------
+
+1. Crear un nuevo QR
+2. En el paso "Apariencia", probar:
+   - Cambiar el QR Code Pattern
+   - Cambiar las esquinas (corners)
+   - Seleccionar un frame
+   - Editar el texto del frame
+   - Subir un logo
+   - Ajustar tamano y margen del logo
+3. Guardar el QR
+4. Verificar que se ve correctamente en el dashboard
+5. Editar el QR y confirmar que los cambios persisten
+6. Escanear el QR con un telefono para verificar que se lee correctamente
+
+
+9. LIMITACIONES CONOCIDAS
+--------------------------
+
+- La descarga PNG/SVG desde el editor descarga el QR con frame.
+- La descarga PNG/SVG desde el dashboard descarga solo el QR sin frame.
+- Los colores de los frames SVG no son editables en esta version.
+- Algunos frames decorativos pueden necesitar ajuste fino del area del QR.
+
+
+10. ROLLBACK (EN CASO NECESARIO)
+---------------------------------
+
+Si hay problemas, se puede revertir la migracion con:
+
+    ALTER TABLE qr_codes
+      DROP COLUMN IF EXISTS qr_corners_style,
+      DROP COLUMN IF EXISTS qr_corners_dot_style,
+      DROP COLUMN IF EXISTS qr_frame_style,
+      DROP COLUMN IF EXISTS qr_frame_text,
+      DROP COLUMN IF EXISTS qr_frame_text_color,
+      DROP COLUMN IF EXISTS qr_frame_bg_color,
+      DROP COLUMN IF EXISTS qr_frame_border_color,
+      DROP COLUMN IF EXISTS qr_image_size,
+      DROP COLUMN IF EXISTS qr_image_margin,
+      DROP COLUMN IF EXISTS qr_error_correction,
+      DROP COLUMN IF EXISTS qr_logo_path;
+
+Y eliminar el bucket:
+
+    supabase storage bucket delete qr-logos
+
+
+NOTAS
+-----
+
+- Los frames SVG estan en app/public/frames/
+- La metadata de frames esta en app/public/frames/index.json
+- El sistema usa qr-code-styling v1.9.1 para generar el QR
+- Los logos se almacenan en Supabase Storage bajo la ruta: {user_id}/{uuid}.{ext}
