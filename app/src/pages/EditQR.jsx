@@ -45,6 +45,15 @@ export default function EditQR() {
     qr_color: '#000000',
     qr_bg_color: '#FFFFFF',
     qr_style: 'square',
+    qr_corners_style: 'square',
+    qr_corners_dot_style: 'square',
+    qr_frame_style: 'none',
+    qr_frame_text: 'Scan me',
+    qr_frame_text_color: '#000000',
+    qr_image_size: 0.4,
+    qr_image_margin: 0,
+    qr_error_correction: 'H',
+    qr_logo_path: null,
     expires_at: null,
     max_scans: null,
     status: 'active'
@@ -65,6 +74,15 @@ export default function EditQR() {
             qr_color: data.qr_color || '#000000',
             qr_bg_color: data.qr_bg_color || '#FFFFFF',
             qr_style: data.qr_style || 'square',
+            qr_corners_style: data.qr_corners_style || 'square',
+            qr_corners_dot_style: data.qr_corners_dot_style || 'square',
+            qr_frame_style: data.qr_frame_style || 'none',
+            qr_frame_text: data.qr_frame_text || 'Scan me',
+            qr_frame_text_color: data.qr_frame_text_color || '#000000',
+            qr_image_size: data.qr_image_size ?? 0.4,
+            qr_image_margin: data.qr_image_margin ?? 0,
+            qr_error_correction: data.qr_error_correction || 'H',
+            qr_logo_path: data.qr_logo_path || null,
             expires_at: data.expires_at || null,
             max_scans: data.max_scans || null,
             status: data.status || 'active'
@@ -97,6 +115,15 @@ export default function EditQR() {
             qr_color: form.qr_color,
             qr_bg_color: form.qr_bg_color,
             qr_style: form.qr_style,
+            qr_corners_style: form.qr_corners_style,
+            qr_corners_dot_style: form.qr_corners_dot_style,
+            qr_frame_style: form.qr_frame_style,
+            qr_frame_text: form.qr_frame_text,
+            qr_frame_text_color: form.qr_frame_text_color,
+            qr_image_size: form.qr_image_size,
+            qr_image_margin: form.qr_image_margin,
+            qr_error_correction: form.qr_error_correction,
+            qr_logo_path: form.qr_logo_path,
             expires_at: form.expires_at,
             max_scans: form.max_scans,
             status: form.status
@@ -210,7 +237,16 @@ export default function EditQR() {
                 initial={{
                   qr_color: form.qr_color,
                   qr_bg_color: form.qr_bg_color,
-                  qr_style: form.qr_style
+                  qr_style: form.qr_style,
+                  qr_corners_style: form.qr_corners_style,
+                  qr_corners_dot_style: form.qr_corners_dot_style,
+                  qr_frame_style: form.qr_frame_style,
+                  qr_frame_text: form.qr_frame_text,
+                  qr_frame_text_color: form.qr_frame_text_color,
+                  qr_image_size: form.qr_image_size,
+                  qr_image_margin: form.qr_image_margin,
+                  qr_error_correction: form.qr_error_correction,
+                  qr_logo_path: form.qr_logo_path
                 }}
               />
 
@@ -253,6 +289,15 @@ export default function EditQR() {
                   qrColor={form.qr_color}
                   qrBgColor={form.qr_bg_color}
                   qrStyle={form.qr_style}
+                  qrCornersStyle={form.qr_corners_style}
+                  qrCornersDotStyle={form.qr_corners_dot_style}
+                  qrLogoUrl={form.qr_logo_path}
+                  qrImageSize={form.qr_image_size}
+                  qrImageMargin={form.qr_image_margin}
+                  qrErrorCorrection={form.qr_error_correction}
+                  qrFrameStyle={form.qr_frame_style}
+                  qrFrameText={form.qr_frame_text}
+                  qrFrameTextColor={form.qr_frame_text_color}
                   size={240}
                 />
               </div>

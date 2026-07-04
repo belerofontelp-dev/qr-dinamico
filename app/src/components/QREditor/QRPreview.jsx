@@ -1,16 +1,164 @@
 import { useEffect, useRef, useState } from 'react';
 import { generateQRCode, renderQRCode, downloadQRPNG, downloadQRSVG } from '../../lib/qr-generator';
+import { loadFramesIndex, getFrameById } from '../../lib/qr-frames';
 
-export default function QRPreview({ shortlink, qrColor, qrBgColor, qrStyle, size = 220, showActions = true }) {
+const FRAME_VIEWBOX = { width: 320, height: 418 };
+const FRAME_SCALE = 1;
+
+export default function QRPreview({
+  shortlink,
+  qrColor,
+  qrBgColor,
+  qrStyle,
+  qrCornersStyle,
+  qrCornersDotStyle,
+  qrLogoUrl,
+  qrImageSize,
+  qrImageMargin,
+  qrErrorCorrection,
+  qrFrameStyle,
+  qrFrameText,
+  qrFrameTextColor,
+  size = 220,
+  showActions = true
+}) {
   const containerRef = useRef(null);
+  const qrContainerRef = useRef(null);
   const qrRef = useRef(null);
   const [copied, setCopied] = useState(false);
+  const [frameData, setFrameData] = useState(null);
+  const [frames, setFrames] = useState([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (qrFrameStyle && qrFrameStyle !== 'none') {
+      loadFramesIndex().then(({ frames }) => {
+        if (cancelled) return;
+        setFrames(frames);
+        setFrameData(getFrameById(qrFrameStyle, frames));
+      }).catch(() => {
+        setFrameData(null);
+      });
+    } else {
+      setFrameData(null);
+    }
+    return () => { cancelled = true; };
+  }, [qrFrameStyle]);
 
   useEffect(() => {
     if (!shortlink || !containerRef.current) return;
-    qrRef.current = generateQRCode(shortlink, { qrColor, qrBgColor, qrStyle, width: size, height: size });
-    renderQRCode(qrRef.current, containerRef.current);
-  }, [shortlink, qrColor, qrBgColor, qrStyle, size]);
+
+    const isFramed = frameData && qrFrameStyle !== 'none';
+
+    if (!isFramed) {
+      // Classic QR without frame
+      qrRef.current = generateQRCode(shortlink, {
+        qrColor,
+        qrBgColor,
+        qrStyle,
+        qrCornersStyle,
+        qrCornersDotStyle,
+        qrLogoUrl,
+        qrImageSize,
+        qrImageMargin,
+        qrErrorCorrection,
+        width: size,
+        height: size
+      });
+      const el = containerRef.current;
+      el.innerHTML = '';
+      el.style.width = '';
+      el.style.height = '';
+      el.style.position = '';
+      renderQRCode(qrRef.current, el);
+      return;
+    }
+
+    // Framed QR: render frame SVG + QR overlay + text
+    const scale = size / FRAME_VIEWBOX.width;
+    const frameWidth = FRAME_VIEWBOX.width * scale;
+    const frameHeight = FRAME_VIEWBOX.height * scale;
+    const qrArea = frameData.qrArea || { x: 40, y: 30, width: 240, height: 240 };
+    const qrSize = Math.round(qrArea.width * scale);
+    const qrX = Math.round(qrArea.x * scale);
+    const qrY = Math.round(qrArea.y * scale);
+    const textArea = frameData.textArea || { x: 40, y: 360, width: 240, height: 45 };
+
+    containerRef.current.innerHTML = '';
+    containerRef.current.style.width = `${frameWidth}px`;
+    containerRef.current.style.height = `${frameHeight}px`;
+    containerRef.current.style.position = 'relative';
+
+    // Frame image
+    const img = document.createElement('img');
+    img.src = `/qr-dinamico/frames/${frameData.file}`;
+    img.style.position = 'absolute';
+    img.style.inset = '0';
+    img.style.width = '100%';
+    img.style.height = '100%';
+    img.style.objectFit = 'contain';
+    img.alt = frameData.name;
+    containerRef.current.appendChild(img);
+
+    // White patch to hide dummy QR
+    const patch = document.createElement('div');
+    patch.style.position = 'absolute';
+    patch.style.left = `${qrX}px`;
+    patch.style.top = `${qrY}px`;
+    patch.style.width = `${qrSize}px`;
+    patch.style.height = `${qrSize}px`;
+    patch.style.backgroundColor = qrBgColor || '#FFFFFF';
+    containerRef.current.appendChild(patch);
+
+    // Real QR container
+    const qrWrapper = document.createElement('div');
+    qrWrapper.style.position = 'absolute';
+    qrWrapper.style.left = `${qrX}px`;
+    qrWrapper.style.top = `${qrY}px`;
+    qrWrapper.style.width = `${qrSize}px`;
+    qrWrapper.style.height = `${qrSize}px`;
+    containerRef.current.appendChild(qrWrapper);
+
+    qrRef.current = generateQRCode(shortlink, {
+      qrColor,
+      qrBgColor,
+      qrStyle,
+      qrCornersStyle,
+      qrCornersDotStyle,
+      qrLogoUrl,
+      qrImageSize,
+      qrImageMargin,
+      qrErrorCorrection,
+      width: qrSize,
+      height: qrSize
+    });
+    renderQRCode(qrRef.current, qrWrapper);
+
+    // Frame text overlay
+    const textEl = document.createElement('div');
+    textEl.textContent = qrFrameText || 'Scan me';
+    textEl.style.position = 'absolute';
+    textEl.style.left = `${textArea.x * scale}px`;
+    textEl.style.top = `${textArea.y * scale}px`;
+    textEl.style.width = `${textArea.width * scale}px`;
+    textEl.style.height = `${textArea.height * scale}px`;
+    textEl.style.display = 'flex';
+    textEl.style.alignItems = 'center';
+    textEl.style.justifyContent = 'center';
+    textEl.style.color = qrFrameTextColor || '#000000';
+    textEl.style.fontSize = `${Math.max(12, 24 * scale)}px`;
+    textEl.style.fontWeight = '600';
+    textEl.style.fontFamily = 'system-ui, -apple-system, sans-serif';
+    textEl.style.textAlign = 'center';
+    textEl.style.overflow = 'hidden';
+    textEl.style.whiteSpace = 'nowrap';
+    textEl.style.pointerEvents = 'none';
+    containerRef.current.appendChild(textEl);
+  }, [
+    shortlink, qrColor, qrBgColor, qrStyle, qrCornersStyle, qrCornersDotStyle,
+    qrLogoUrl, qrImageSize, qrImageMargin, qrErrorCorrection,
+    qrFrameStyle, qrFrameText, qrFrameTextColor, frameData, size
+  ]);
 
   const handleCopy = async () => {
     if (!shortlink) return;
@@ -30,7 +178,7 @@ export default function QRPreview({ shortlink, qrColor, qrBgColor, qrStyle, size
       <div
         ref={containerRef}
         className="bg-white rounded-lg border border-gray-200"
-        style={{ width: size, height: size }}
+        style={{ width: frameData ? undefined : size, height: frameData ? undefined : size }}
       />
 
       {showActions && (

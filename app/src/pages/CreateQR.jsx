@@ -41,7 +41,20 @@ export default function CreateQR() {
   const [platform, setPlatform] = useState('whatsapp');
   const [name, setName] = useState('');
   const [formData, setFormData] = useState({});
-  const [styleData, setStyleData] = useState({});
+  const [styleData, setStyleData] = useState({
+    qr_color: '#000000',
+    qr_bg_color: '#FFFFFF',
+    qr_style: 'square',
+    qr_corners_style: 'square',
+    qr_corners_dot_style: 'square',
+    qr_frame_style: 'none',
+    qr_frame_text: 'Scan me',
+    qr_frame_text_color: '#000000',
+    qr_image_size: 0.4,
+    qr_image_margin: 0,
+    qr_error_correction: 'H',
+    qr_logo_path: null
+  });
   const [expiryData, setExpiryData] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -98,7 +111,20 @@ export default function CreateQR() {
     setPlatform('whatsapp');
     setName('');
     setFormData({});
-    setStyleData({});
+    setStyleData({
+      qr_color: '#000000',
+      qr_bg_color: '#FFFFFF',
+      qr_style: 'square',
+      qr_corners_style: 'square',
+      qr_corners_dot_style: 'square',
+      qr_frame_style: 'none',
+      qr_frame_text: 'Scan me',
+      qr_frame_text_color: '#000000',
+      qr_image_size: 0.4,
+      qr_image_margin: 0,
+      qr_error_correction: 'H',
+      qr_logo_path: null
+    });
     setExpiryData({});
     setCreated(null);
     setError('');
@@ -197,6 +223,15 @@ export default function CreateQR() {
                     qrColor={styleData.qr_color ?? '#000000'}
                     qrBgColor={styleData.qr_bg_color ?? '#FFFFFF'}
                     qrStyle={styleData.qr_style ?? 'square'}
+                    qrCornersStyle={styleData.qr_corners_style ?? 'square'}
+                    qrCornersDotStyle={styleData.qr_corners_dot_style ?? 'square'}
+                    qrLogoUrl={styleData.qr_logo_path}
+                    qrImageSize={styleData.qr_image_size ?? 0.4}
+                    qrImageMargin={styleData.qr_image_margin ?? 0}
+                    qrErrorCorrection={styleData.qr_error_correction ?? 'H'}
+                    qrFrameStyle={styleData.qr_frame_style ?? 'none'}
+                    qrFrameText={styleData.qr_frame_text ?? 'Scan me'}
+                    qrFrameTextColor={styleData.qr_frame_text_color ?? '#000000'}
                     size={200}
                     showActions={false}
                   />
@@ -228,6 +263,15 @@ export default function CreateQR() {
                   qrColor={created.qr_color ?? '#000000'}
                   qrBgColor={created.qr_bg_color ?? '#FFFFFF'}
                   qrStyle={created.qr_style ?? 'square'}
+                  qrCornersStyle={created.qr_corners_style ?? 'square'}
+                  qrCornersDotStyle={created.qr_corners_dot_style ?? 'square'}
+                  qrLogoUrl={created.qr_logo_path}
+                  qrImageSize={created.qr_image_size ?? 0.4}
+                  qrImageMargin={created.qr_image_margin ?? 0}
+                  qrErrorCorrection={created.qr_error_correction ?? 'H'}
+                  qrFrameStyle={created.qr_frame_style ?? 'none'}
+                  qrFrameText={created.qr_frame_text ?? 'Scan me'}
+                  qrFrameTextColor={created.qr_frame_text_color ?? '#000000'}
                   size={240}
                 />
               </div>

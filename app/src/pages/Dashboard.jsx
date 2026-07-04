@@ -189,6 +189,12 @@ function QRCard({ qr, onDelete }) {
       qrColor: qr.qr_color ?? '#000000',
       qrBgColor: qr.qr_bg_color ?? '#FFFFFF',
       qrStyle: qr.qr_style ?? 'square',
+      qrCornersStyle: qr.qr_corners_style ?? 'square',
+      qrCornersDotStyle: qr.qr_corners_dot_style ?? 'square',
+      qrLogoUrl: qr.qr_logo_path,
+      qrImageSize: qr.qr_image_size ?? 0.4,
+      qrImageMargin: qr.qr_image_margin ?? 0,
+      qrErrorCorrection: qr.qr_error_correction ?? 'H',
       width: 1024,
       height: 1024
     });
@@ -217,6 +223,15 @@ function QRCard({ qr, onDelete }) {
             qrColor={qr.qr_color ?? '#000000'}
             qrBgColor={qr.qr_bg_color ?? '#FFFFFF'}
             qrStyle={qr.qr_style ?? 'square'}
+            qrCornersStyle={qr.qr_corners_style ?? 'square'}
+            qrCornersDotStyle={qr.qr_corners_dot_style ?? 'square'}
+            qrLogoUrl={qr.qr_logo_path}
+            qrImageSize={qr.qr_image_size ?? 0.4}
+            qrImageMargin={qr.qr_image_margin ?? 0}
+            qrErrorCorrection={qr.qr_error_correction ?? 'H'}
+            qrFrameStyle={qr.qr_frame_style ?? 'none'}
+            qrFrameText={qr.qr_frame_text ?? 'Scan me'}
+            qrFrameTextColor={qr.qr_frame_text_color ?? '#000000'}
             size={100}
             showActions={false}
           />
