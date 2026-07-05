@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { PLATFORMS } from '../lib/platforms';
+import { QR_TYPES } from '../lib/qr-types';
 import { parseDestinationUrl } from '../lib/qr-utils';
 import AnalyticsDashboard from '../components/Analytics/AnalyticsDashboard';
 import QRStyleEditor from '../components/QREditor/QRStyleEditor';
@@ -182,7 +183,7 @@ export default function EditQR() {
     );
   }
 
-  const platform = PLATFORMS[qr.platform] || PLATFORMS.url;
+  const platform = PLATFORMS[qr.platform] || QR_TYPES[qr.platform] || PLATFORMS.url;
   const shortlink = `${import.meta.env.VITE_WORKER_URL}/q/${qr.slug}`;
   const PlatformForm = PLATFORM_FORMS[qr.platform] || UrlForm;
 

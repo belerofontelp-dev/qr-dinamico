@@ -4,6 +4,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useQR } from '../hooks/useQR';
 import { logout, supabase } from '../lib/supabase';
 import { PLATFORMS } from '../lib/platforms';
+import { QR_TYPES } from '../lib/qr-types';
 import QRPreview from '../components/QREditor/QRPreview';
 import { generateQRCode, downloadQRPNG, downloadQRSVG, downloadQRJPG } from '../lib/qr-generator';
 
@@ -237,8 +238,8 @@ export default function Dashboard() {
 
 function QRCard({ qr, onDelete, selected, onToggleSelect }) {
   const shortlink = `${import.meta.env.VITE_WORKER_URL}/q/${qr.slug}`;
-  const platform = PLATFORMS[qr.platform] || PLATFORMS.url;
-  const Icon = platform.Icon;
+  const platform = PLATFORMS[qr.platform] || QR_TYPES[qr.platform] || PLATFORMS.url;
+  const Icon = platform.Icon || platform.icon;
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {

@@ -69,15 +69,22 @@ export default function LandingPage() {
 
   switch (qr.platform) {
     case 'linklist':
+    case 'links':
       return <LinkListLanding links={config.links || []} qrName={qr.name} />;
     case 'appstore':
+    case 'apps':
       return <AppStoreLanding iosUrl={config.ios_url} androidUrl={config.android_url} qrName={qr.name} />;
     case 'multisocial':
+    case 'social':
       return <MultiSocialLanding config={config} qrName={qr.name} />;
     case 'wifi':
       return <WiFiLanding config={config} qrName={qr.name} />;
     case 'vcard':
       return <VCardLanding config={config} qrName={qr.name} />;
+    case 'business':
+      return <BusinessLanding config={config} qrName={qr.name} />;
+    case 'coupon':
+      return <CouponLanding config={config} qrName={qr.name} />;
     default:
       window.location.href = destUrl;
       return null;
@@ -212,6 +219,76 @@ function WiFiLanding({ config, qrName }) {
         >
           Conectar a esta red
         </button>
+      </div>
+    </div>
+  );
+}
+
+function BusinessLanding({ config, qrName }) {
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex flex-col items-center justify-center px-4 py-12 text-center">
+      <div className="bg-white rounded-2xl border border-gray-200 p-8 max-w-sm w-full shadow-sm">
+        <div className="w-16 h-16 bg-[#f3f0ff] rounded-2xl mx-auto flex items-center justify-center text-2xl font-bold text-[#8364ff]">
+          {config.business_name?.[0] || 'B'}
+        </div>
+        <h1 className="text-xl font-bold text-gray-900 mt-4">{config.business_name || qrName}</h1>
+        <div className="mt-6 space-y-3 text-left">
+          {config.phone && (
+            <a href={`tel:${config.phone}`} className="flex items-center gap-3 text-sm text-gray-700 hover:text-black">
+              <span className="text-lg">📞</span> {config.phone}
+            </a>
+          )}
+          {config.email && (
+            <a href={`mailto:${config.email}`} className="flex items-center gap-3 text-sm text-gray-700 hover:text-black break-all">
+              <span className="text-lg">📧</span> {config.email}
+            </a>
+          )}
+          {config.website && (
+            <a href={config.website.startsWith('http') ? config.website : `https://${config.website}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-sm text-gray-700 hover:text-black break-all">
+              <span className="text-lg">🌐</span> {config.website}
+            </a>
+          )}
+          {config.address && (
+            <p className="flex items-center gap-3 text-sm text-gray-700">
+              <span className="text-lg">📍</span> {config.address}
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CouponLanding({ config, qrName }) {
+  const [revealed, setRevealed] = useState(false);
+
+  const handleReveal = () => {
+    setRevealed(true);
+    if (config.code) {
+      navigator.clipboard.writeText(config.code).catch(() => {});
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-[#f3f0ff] to-white flex flex-col items-center justify-center px-4 py-12 text-center">
+      <div className="bg-white rounded-2xl border border-gray-200 p-8 max-w-sm w-full shadow-lg">
+        <div className="text-5xl mb-4">🎟️</div>
+        <h1 className="text-xl font-bold text-gray-900 mb-1">{qrName}</h1>
+        {config.description && <p className="text-sm text-gray-500 mb-6">{config.description}</p>}
+        {revealed ? (
+          <div className="bg-[#f3f0ff] rounded-xl p-5 border border-[#ded5fe]">
+            <p className="text-xs text-[#6e6e6e] mb-1">Your coupon code:</p>
+            <p className="text-2xl font-bold text-[#8364ff] tracking-widest select-all">{config.code || 'N/A'}</p>
+            <p className="text-[10px] text-[#6e6e6e] mt-2">Code copied to clipboard</p>
+          </div>
+        ) : (
+          <button
+            onClick={handleReveal}
+            className="w-full px-6 py-3.5 bg-[#8364ff] text-white rounded-xl hover:bg-[#6b4ddb] transition text-sm font-semibold"
+          >
+            Reveal Coupon Code
+          </button>
+        )}
       </div>
     </div>
   );
