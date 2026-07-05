@@ -1,43 +1,23 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useQR } from '../hooks/useQR';
 import { QR_TYPE_LIST } from '../lib/qr-types';
-import { generateQRCode } from '../lib/qr-generator';
-import { Stepper } from '../components/ui';
+import { generateQRCode, downloadQRPNG, downloadQRSVG } from '../lib/qr-generator';
+import Stepper from '../components/ui/Stepper';
 import Button from '../components/ui/Button';
 import TypeSelector from '../components/CreateWizard/TypeSelector';
 import ContentStep from '../components/CreateWizard/ContentStep';
 import DesignStep from '../components/CreateWizard/DesignStep';
-import DownloadStep from '../components/CreateWizard/DownloadStep';
-import BottomBar from '../components/CreateWizard/BottomBar';
 import MobilePreview from '../components/MobilePreview/MobilePreview';
-import QRRenderer from '../components/QREditor/QRRenderer';
-import { HelpCircle, X } from 'lucide-react';
+import { renderPreviewForType } from '../components/CreateWizard/TypePreviews';
+import { HelpCircle, X, ArrowLeft } from 'lucide-react';
 
 const STEPS = [
-  { label: 'Select QR type' },
-  { label: 'Add content' },
-  { label: 'Design QR code' },
-  { label: 'Download QR code' }
-];
-
-const TUTORIAL_STEPS = [
-  {
-    img: 'https://qr-generator.ai/themes/altum/assets/static/s1.webp',
-    title: 'Select a QR code type',
-    desc: 'Select the type of QR code you need by clicking on the respective icon. You have up to 16 different options.'
-  },
-  {
-    img: 'https://qr-generator.ai/themes/altum/assets/static/s2.webp',
-    title: 'Add content to your QR code',
-    desc: 'As you add content to your QR code, look at the phone on the right to visualize what people will see after scanning your QR code.'
-  },
-  {
-    img: 'https://qr-generator.ai/themes/altum/assets/static/s3.webp',
-    title: 'Design your QR code',
-    desc: 'It is time to personalize your QR code. Change its design by adding a frame, selecting your preferred pattern style, adding your own logo and more.'
-  }
+  { label: 'Seleccionar tipo' },
+  { label: 'Agregar contenido' },
+  { label: 'Diseñar código QR' },
+  { label: 'Descargar código QR' }
 ];
 
 export default function CreateQR() {
@@ -56,7 +36,7 @@ export default function CreateQR() {
     qr_corners_style: 'square',
     qr_corners_dot_style: 'square',
     qr_frame_style: 'none',
-    qr_frame_text: 'Scan me',
+    qr_frame_text: 'Escanear',
     qr_frame_text_color: '#000000',
     qr_image_size: 0.4,
     qr_image_margin: 0,
@@ -66,17 +46,14 @@ export default function CreateQR() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [created, setCreated] = useState(null);
-  const [qrInstance, setQrInstance] = useState(null);
+  const [qrRef, setQrRef] = useState(null);
   const [showHelp, setShowHelp] = useState(false);
-  const [previewOpen, setPreviewOpen] = useState(false);
-
   const qrContainerRef = useRef(null);
-
   const previewUrl = `${import.meta.env.VITE_WORKER_URL}/q/preview`;
-  const currentTypeLabel = QR_TYPE_LIST.find((t) => t.id === qrType)?.label || '';
 
-  useEffect(() => {
+  const updateQR = useCallback(() => {
     if (!qrContainerRef.current) return;
+    const size = 200;
     const qr = generateQRCode(previewUrl, {
       qrColor: styleData.qr_color ?? '#000000',
       qrBgColor: styleData.qr_bg_color ?? '#FFFFFF',
@@ -87,17 +64,16 @@ export default function CreateQR() {
       qrImageSize: styleData.qr_image_size ?? 0.4,
       qrImageMargin: styleData.qr_image_margin ?? 0,
       qrErrorCorrection: styleData.qr_error_correction ?? 'H',
-      width: 180,
-      height: 180
+      width: size,
+      height: size
     });
-    setQrInstance(qr);
+    setQrRef(qr);
     const el = qrContainerRef.current;
     el.innerHTML = '';
     qr.append(el);
-    return () => {
-      qrContainerRef.current && (qrContainerRef.current.innerHTML = '');
-    };
   }, [styleData, previewUrl]);
+
+  useEffect(() => { updateQR(); }, [updateQR]);
 
   const handleTypeSelect = (type) => {
     setQrType(type);
@@ -105,8 +81,8 @@ export default function CreateQR() {
   };
 
   const validateStep = () => {
-    if (step === 1 && !qrType) return 'Please select a QR type';
-    if (step === 2 && !name.trim()) return 'QR name is required';
+    if (step === 1 && !qrType) return 'Seleccioná un tipo de QR';
+    if (step === 2 && !name.trim()) return 'El nombre del QR es obligatorio';
     return '';
   };
 
@@ -123,13 +99,14 @@ export default function CreateQR() {
   };
 
   const handleSubmit = async () => {
-    if (!name.trim()) { setError('QR name is required'); return; }
+    if (!name.trim()) { setError('El nombre del QR es obligatorio'); return; }
     setLoading(true);
     setError('');
 
+    const { expires_at, max_scans, ...cleanStyle } = styleData;
     try {
-      const platformData = { platform: qrType, name, ...formData, ...styleData };
-      const qr = await createQR(platformData);
+      const payload = { platform: qrType, name, ...formData, ...cleanStyle };
+      const qr = await createQR(payload);
       setCreated(qr);
       setStep(4);
     } catch (err) {
@@ -144,69 +121,30 @@ export default function CreateQR() {
     setQrType('');
     setName('');
     setFormData({});
-    setStyleData({
-      qr_color: '#000000',
-      qr_bg_color: '#FFFFFF',
-      qr_style: 'square',
-      qr_corners_style: 'square',
-      qr_corners_dot_style: 'square',
-      qr_frame_style: 'none',
-      qr_frame_text: 'Scan me',
-      qr_frame_text_color: '#000000',
-      qr_image_size: 0.4,
-      qr_image_margin: 0,
-      qr_error_correction: 'H',
-      qr_logo_path: null
-    });
     setCreated(null);
     setError('');
   };
 
-  const renderQrPreview = () => (
-    <div className="flex flex-col items-center gap-3">
-      <div ref={qrContainerRef} className="bg-white rounded-xl p-2 border border-[#eeeeee]" />
-      <p className="text-[10px] text-[#6e6e6e] font-medium">Scan with your phone</p>
-    </div>
-  );
-
-  const renderPreviewContent = () => {
-    if (step === 1) return null;
-    if (!qrType) return null;
-
-    return (
-      <div className="flex flex-col items-center justify-center h-full text-center p-3">
-        <div className="w-12 h-12 rounded-xl bg-[#f3f0ff] flex items-center justify-center mb-3">
-          {(() => {
-            const typeInfo = QR_TYPE_LIST.find(t => t.id === qrType);
-            if (!typeInfo) return null;
-            const Icon = typeInfo.icon;
-            return <Icon />;
-          })()}
-        </div>
-        <p className="text-xs font-bold text-[#131d29] mb-1">{currentTypeLabel}</p>
-        <p className="text-[10px] text-[#a0a0a0] leading-relaxed">
-          {name ? `"${name}" will be shown here` : 'Fill in the form to preview your landing page'}
-        </p>
-      </div>
-    );
+  const handleTypeChange = () => {
+    setStep(1);
+    setQrType('');
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      {/* Header */}
-      <header className="sticky top-0 z-30 bg-white border-b border-[#eeeeee]">
+    <div className="min-h-screen bg-[#f8f9fc] flex flex-col">
+      <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-[#e8e8ed]">
         <div className="max-w-7xl mx-auto px-4 md:px-6 h-14 flex items-center justify-between">
-          <Link to="/dashboard" className="flex items-center gap-2 shrink-0">
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-              <rect width="32" height="32" rx="8" fill="#8364ff" />
-              <rect x="7" y="7" width="18" height="18" rx="2" stroke="white" strokeWidth="1.5" fill="none" />
-              <rect x="10" y="10" width="12" height="12" rx="1" stroke="white" strokeWidth="1.5" fill="none" />
-              <rect x="13" y="13" width="6" height="6" rx="0.5" fill="white" />
+          <Link to="/dashboard" className="flex items-center gap-2.5 shrink-0">
+            <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
+              <rect width="34" height="34" rx="10" fill="#8364ff" />
+              <rect x="8" y="8" width="18" height="18" rx="2.5" stroke="white" strokeWidth="1.5" fill="none" />
+              <rect x="11" y="11" width="12" height="12" rx="1.5" stroke="white" strokeWidth="1.5" fill="none" />
+              <rect x="14" y="14" width="6" height="6" rx="1" fill="white" />
             </svg>
             <span className="text-sm font-bold text-[#131d29] hidden md:inline">QR Generator</span>
           </Link>
 
-          <div className="hidden md:block flex-1 max-w-md mx-8">
+          <div className="hidden md:block flex-1 max-w-lg mx-8">
             <Stepper steps={STEPS} current={step} />
           </div>
 
@@ -214,39 +152,34 @@ export default function CreateQR() {
             <button
               onClick={() => setShowHelp(true)}
               className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#f7f7f7] transition-colors"
-              title="Help"
+              title="Ayuda"
             >
               <HelpCircle className="w-4 h-4 text-[#6e6e6e]" />
             </button>
             <Link
               to="/dashboard"
-              className="h-8 px-3 flex items-center text-xs font-semibold text-[#6e6e6e] hover:text-[#131d29] rounded-lg border border-[#eeeeee] hover:bg-[#f7f7f7] transition-colors"
+              className="h-8 px-3 flex items-center text-xs font-semibold text-[#6e6e6e] hover:text-[#131d29] rounded-lg border border-[#e0e0e0] hover:bg-[#f7f7f7] transition-colors"
             >
-              Cancel
+              Cancelar
             </Link>
           </div>
         </div>
-        {/* Mobile stepper */}
         <div className="md:hidden px-4 pb-3">
           <Stepper steps={STEPS} current={step} />
         </div>
       </header>
 
-      {/* Main */}
-      <main className="flex-1 pb-20">
+      <main className="flex-1">
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-6">
-          <div className="flex flex-col lg:flex-row gap-6">
-            {/* Left panel */}
-            <div className="flex-1 min-w-0 lg:max-w-[calc(100%-320px)]">
-              {error && (
-                <div className="mb-4 px-4 py-2.5 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600 flex items-center justify-between">
-                  {error}
-                  <button onClick={() => setError('')} className="ml-2">
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              )}
+          {error && (
+            <div className="mb-4 px-4 py-2.5 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600 flex items-center justify-between max-w-3xl">
+              {error}
+              <button onClick={() => setError('')}><X className="w-4 h-4" /></button>
+            </div>
+          )}
 
+          <div className="flex flex-col lg:flex-row gap-6">
+            <div className="flex-1 min-w-0 lg:max-w-[calc(100%-320px)]">
               {step === 1 && (
                 <TypeSelector selected={qrType} onSelect={handleTypeSelect} />
               )}
@@ -269,93 +202,136 @@ export default function CreateQR() {
               )}
 
               {step === 4 && created && (
-                <DownloadStep
-                  qrCode={qrInstance}
-                  shortlink={created.shortlink}
-                  platform={qrType}
-                  onDownloadComplete={handleCreateAnother}
-                />
+                <div className="flex flex-col items-center text-center space-y-6 py-8">
+                  <div className="w-16 h-16 rounded-2xl bg-[#f3f0ff] flex items-center justify-center">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#8364ff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-[#131d29] mb-1">¡Tu código QR está listo!</h2>
+                    <p className="text-sm text-[#6e6e6e]">
+                      Podés descargarlo o compartir el enlace.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3 flex-wrap justify-center">
+                    <Button variant="primary" onClick={() => qrRef?.download({ name: 'qr-code', extension: 'png' })}>
+                      Descargar PNG
+                    </Button>
+                    <Button variant="outline" onClick={() => qrRef?.download({ name: 'qr-code', extension: 'svg' })}>
+                      Descargar SVG
+                    </Button>
+                    <Button variant="outline" onClick={handleCreateAnother}>
+                      Crear otro
+                    </Button>
+                    <Link to="/dashboard">
+                      <Button variant="primary">
+                        Ir al panel
+                      </Button>
+                    </Link>
+                  </div>
+                  {created.shortlink && (
+                    <div className="w-full max-w-sm">
+                      <p className="text-xs text-[#6e6e6e] mb-1.5">Compartí este enlace:</p>
+                      <div className="flex items-center gap-2">
+                        <input
+                          readOnly
+                          value={created.shortlink}
+                          className="flex-1 h-10 rounded-lg border border-[#e0e0e0] bg-[#f7f7f7] px-3 text-xs text-[#6e6e6e] truncate"
+                        />
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={() => navigator.clipboard.writeText(created.shortlink)}
+                        >
+                          Copiar
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
 
-            {/* Right panel - mobile preview */}
             <div className="hidden lg:block w-[300px] shrink-0">
               <div className="sticky top-20">
-                <MobilePreview showQr={step >= 3}>
-                  {step >= 2 && renderPreviewContent()}
+                <MobilePreview
+                  tabs
+                  qrTabEnabled={step >= 2}
+                  defaultTab={step === 1 ? 0 : (qrType ? 1 : 0)}
+                >
+                  {step >= 2 && qrType && renderPreviewForType(qrType, formData)}
                 </MobilePreview>
-                <div className="mt-4 flex justify-center">
-                  {step >= 2 && renderQrPreview()}
-                </div>
+                <div
+                  ref={qrContainerRef}
+                  className="mt-4 flex justify-center min-h-[200px] items-start"
+                />
               </div>
             </div>
           </div>
         </div>
       </main>
 
-      {/* Bottom bar */}
       {step < 4 && (
-        <BottomBar
-          current={step}
-          total={4}
-          onBack={prevStep}
-          onNext={nextStep}
-          onPreview={() => setPreviewOpen(true)}
-          onSubmit={handleSubmit}
-          loading={loading}
-          canProceed={!!qrType}
-        />
-      )}
-
-      {/* Preview modal */}
-      {previewOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setPreviewOpen(false)}>
-          <div className="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full mx-4" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-bold text-[#131d29]">QR Code Preview</h3>
-              <button onClick={() => setPreviewOpen(false)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#f7f7f7]">
-                <X className="w-4 h-4 text-[#6e6e6e]" />
-              </button>
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#e8e8ed] shadow-[0_-2px_12px_rgba(0,0,0,0.06)] z-40">
+          <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
+            <div>
+              {step > 1 && (
+                <Button variant="outline" size="md" onClick={prevStep}>
+                  <ArrowLeft className="w-4 h-4" />
+                  Volver
+                </Button>
+              )}
             </div>
-            <div className="flex flex-col items-center gap-4">
-              <div ref={qrContainerRef} className="bg-white rounded-xl p-3 border border-[#eeeeee]" />
-              <div className="flex gap-2 w-full">
-                <Button variant="primary" size="sm" className="flex-1" onClick={() => qrInstance?.download({ name: 'qr-code', extension: 'png' })}>
-                  Download PNG
+
+            <div className="flex items-center gap-3">
+              {step === 1 && (
+                <Button variant="primary" size="md" onClick={nextStep} disabled={!qrType}>
+                  Siguiente
                 </Button>
-                <Button variant="outline" size="sm" className="flex-1" onClick={() => qrInstance?.download({ name: 'qr-code', extension: 'svg' })}>
-                  Download SVG
+              )}
+              {step === 2 && (
+                <Button variant="primary" size="md" onClick={nextStep}>
+                  Guardar
                 </Button>
-              </div>
+              )}
+              {step === 3 && (
+                <Button variant="primary" size="md" onClick={handleSubmit} loading={loading}>
+                  Crear
+                </Button>
+              )}
             </div>
           </div>
         </div>
       )}
 
-      {/* Help/Tutorial modal */}
       {showHelp && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setShowHelp(false)}>
-          <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full mx-4 max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-6 py-4 border-b border-[#eeeeee] sticky top-0 bg-white">
-              <h3 className="text-base font-bold text-[#131d29]">How to create a QR code</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm" onClick={() => setShowHelp(false)}>
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[#eeeeee]">
+              <h3 className="text-base font-bold text-[#131d29]">Cómo crear un código QR</h3>
               <button onClick={() => setShowHelp(false)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#f7f7f7]">
                 <X className="w-4 h-4 text-[#6e6e6e]" />
               </button>
             </div>
-            <div className="p-6 space-y-6">
-              {TUTORIAL_STEPS.map((t, idx) => (
-                <div key={idx} className="flex gap-4">
-                  <div className="w-8 h-8 rounded-lg bg-[#f3f0ff] flex items-center justify-center shrink-0 mt-0.5">
-                    <span className="text-xs font-bold text-[#8364ff]">{idx + 1}</span>
+            <div className="p-6 space-y-4">
+              {[
+                { title: '1. Seleccioná un tipo', desc: 'Elegí entre 16 tipos de códigos QR según lo que quieras compartir.' },
+                { title: '2. Agregá el contenido', desc: 'Completá los datos. Mirá la vista previa en el teléfono a la derecha.' },
+                { title: '3. Diseñá tu QR', desc: 'Personalizá colores, patrón, marco y logo. Probá escanearlo antes de descargar.' },
+              ].map((t, i) => (
+                <div key={i} className="flex gap-3">
+                  <div className="w-7 h-7 rounded-lg bg-[#f3f0ff] flex items-center justify-center shrink-0">
+                    <span className="text-xs font-bold text-[#8364ff]">{i + 1}</span>
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-[#131d29]">{t.title}</h4>
-                    <p className="text-xs text-[#6e6e6e] mt-1">{t.desc}</p>
+                    <p className="text-sm font-bold text-[#131d29]">{t.title}</p>
+                    <p className="text-xs text-[#6e6e6e] mt-0.5">{t.desc}</p>
                   </div>
                 </div>
               ))}
               <Button variant="primary" className="w-full" onClick={() => setShowHelp(false)}>
-                Continue
+                Entendido
               </Button>
             </div>
           </div>

@@ -2,45 +2,168 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../lib/supabase';
 import { QR_PATTERNS, CORNER_STYLES, INNER_CORNER_STYLES } from '../../lib/qr-generator';
 import { loadFramesIndex } from '../../lib/qr-frames';
+import AccordionCard from '../ui/AccordionCard';
 import { cn } from '../../lib/cn';
-import { ChevronDown, Upload, Trash2 } from 'lucide-react';
+import { Upload, Trash2 } from 'lucide-react';
 
-function CollapseSection({ title, defaultOpen = true, children }) {
-  const [open, setOpen] = useState(defaultOpen);
+function PatternThumbnail({ type, selected, onClick }) {
+  const renderDots = () => {
+    const size = 4;
+    const gap = 6;
+    const dots = [];
+    for (let row = 0; row < 4; row++) {
+      for (let col = 0; col < 4; col++) {
+        dots.push(
+          <rect
+            key={`${row}-${col}`}
+            x={col * gap + 2}
+            y={row * gap + 2}
+            width={type === 'dots' ? 3.5 : size}
+            height={type === 'dots' ? 3.5 : size}
+            rx={
+              type === 'extra-rounded' ? 3 :
+              type === 'rounded' ? 1.5 :
+              type === 'classy' || type === 'classy-rounded' ? (type === 'classy-rounded' ? 2 : 0) : 0
+            }
+            fill="#131d29"
+          />
+        );
+      }
+    }
+    if (type === 'classy' || type === 'classy-rounded') {
+      return (
+        <g transform="rotate(45, 12, 12)">
+          {dots}
+        </g>
+      );
+    }
+    return <>{dots}</>;
+  };
+
   return (
-    <div className="border border-[#eeeeee] rounded-xl overflow-hidden">
-      <button
-        type="button"
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-4 py-3 bg-[#fafafa] hover:bg-[#f5f5f5] transition-colors"
-      >
-        <span className="text-sm font-bold text-[#131d29]">{title}</span>
-        <ChevronDown className={cn('w-4 h-4 text-[#6e6e6e] transition-transform', open && 'rotate-180')} />
-      </button>
-      {open && <div className="p-4">{children}</div>}
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        'flex flex-col items-center gap-1.5 p-2 rounded-xl border-2 transition-all duration-150 w-full',
+        selected
+          ? 'border-[#8364ff] bg-[#f3f0ff]'
+          : 'border-[#eeeeee] bg-white hover:border-[#d5d5d5]'
+      )}
+    >
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+        <rect width="28" height="28" rx="4" fill="#f7f7f7" />
+        <g transform="translate(2, 2)">
+          {renderDots()}
+        </g>
+      </svg>
+      <span className="text-[10px] font-semibold text-[#6e6e6e] leading-tight text-center">
+        {type === 'square' ? 'Cuadrados' :
+         type === 'dots' ? 'Puntos' :
+         type === 'rounded' ? 'Redond.' :
+         type === 'extra-rounded' ? 'Muy red.' :
+         type === 'classy' ? 'Elegante' :
+         type === 'classy-rounded' ? 'Eleg. red.' : type}
+      </span>
+    </button>
+  );
+}
+
+function CornerThumbnail({ type, selected, onClick, cornersStyle }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        'flex flex-col items-center gap-1.5 p-2 rounded-xl border-2 transition-all duration-150 w-full',
+        selected
+          ? 'border-[#8364ff] bg-[#f3f0ff]'
+          : 'border-[#eeeeee] bg-white hover:border-[#d5d5d5]'
+      )}
+    >
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+        <rect width="28" height="28" rx="4" fill="#f7f7f7" />
+        <rect
+          x="2" y="2" width="9" height="9"
+          rx={type === 'extra-rounded' ? 4 : type === 'dot' ? 1 : 0}
+          fill="#131d29"
+        />
+        <rect
+          x="17" y="2" width="9" height="9"
+          rx={type === 'extra-rounded' ? 4 : type === 'dot' ? 1 : 0}
+          fill="#131d29"
+        />
+        <rect
+          x="2" y="17" width="9" height="9"
+          rx={type === 'extra-rounded' ? 4 : type === 'dot' ? 1 : 0}
+          fill="#131d29"
+        />
+      </svg>
+      <span className="text-[10px] font-semibold text-[#6e6e6e] leading-tight text-center">
+        {type === 'square' ? 'Cuadrado' :
+         type === 'dot' ? 'Punto' :
+         type === 'extra-rounded' ? 'Redond.' : type}
+      </span>
+    </button>
+  );
+}
+
+function ColorInput({ value, onChange, label }) {
+  return (
+    <div className="flex items-center gap-2.5">
+      <div className="relative">
+        <div
+          className="w-10 h-10 rounded-lg border-2 border-[#e0e0e0] shadow-sm cursor-pointer"
+          style={{ backgroundColor: value }}
+        >
+          <input
+            type="color"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            className="absolute inset-0 opacity-0 cursor-pointer"
+          />
+        </div>
+      </div>
+      <div className="flex-1">
+        {label && <span className="text-[10px] text-[#a0a0a0] block mb-0.5">{label}</span>}
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => {
+            const v = e.target.value;
+            if (/^#[0-9a-fA-F]{0,6}$/.test(v)) onChange(v);
+          }}
+          className="w-full h-9 rounded-lg border border-[#e0e0e0] bg-white px-3 text-xs text-[#131d29] font-mono uppercase focus:outline-none focus:border-[#8364ff] focus:ring-2 focus:ring-[#8364ff]/15"
+          maxLength={7}
+        />
+      </div>
     </div>
   );
 }
 
-function ColorPicker({ value, onChange }) {
+function ToggleSwitch({ label, value, onChange, note }) {
   return (
-    <label className="relative inline-flex items-center gap-2 cursor-pointer">
-      <div className="relative">
-        <input
-          type="color"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="sr-only"
-          id={`color-${value}`}
-        />
-        <div
-          className="w-9 h-9 rounded-lg border-2 border-[#eeeeee] shadow-sm"
-          style={{ backgroundColor: value }}
-          onClick={() => document.getElementById(`color-${value}`)?.click()}
-        />
+    <div>
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-semibold text-[#6e6e6e]">{label}</span>
+        <button
+          type="button"
+          onClick={() => onChange(!value)}
+          className={cn(
+            'relative w-9 h-5 rounded-full transition-colors duration-200',
+            value ? 'bg-[#8364ff]' : 'bg-[#d5d5d5]'
+          )}
+        >
+          <span
+            className={cn(
+              'absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200',
+              value ? 'translate-x-[18px]' : 'translate-x-[1px]'
+            )}
+          />
+        </button>
       </div>
-      <span className="text-xs font-medium text-[#6e6e6e] uppercase">{value}</span>
-    </label>
+      {note && <p className="text-[10px] text-[#a0a0a0] mt-2">{note}</p>}
+    </div>
   );
 }
 
@@ -51,21 +174,22 @@ export default function DesignStep({ styleData, onChange }) {
   const [cornersStyle, setCornersStyle] = useState(styleData.qr_corners_style ?? 'square');
   const [cornersDotStyle, setCornersDotStyle] = useState(styleData.qr_corners_dot_style ?? 'square');
   const [frameStyle, setFrameStyle] = useState(styleData.qr_frame_style ?? 'none');
-  const [frameText, setFrameText] = useState(styleData.qr_frame_text ?? 'Scan me');
+  const [frameText, setFrameText] = useState(styleData.qr_frame_text ?? 'Escanear');
   const [frameTextColor, setFrameTextColor] = useState(styleData.qr_frame_text_color ?? '#000000');
   const [logoUrl, setLogoUrl] = useState(styleData.qr_logo_path ?? '');
   const [imageSize, setImageSize] = useState(styleData.qr_image_size ?? 0.4);
   const [imageMargin, setImageMargin] = useState(styleData.qr_image_margin ?? 0);
   const [errorCorrection, setErrorCorrection] = useState(styleData.qr_error_correction ?? 'H');
   const [frames, setFrames] = useState([]);
-  const [categories, setCategories] = useState([]);
+  const [gradientPattern, setGradientPattern] = useState(false);
+  const [transparentBg, setTransparentBg] = useState(false);
+  const [gradientBg, setGradientBg] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
 
   useEffect(() => {
     loadFramesIndex().then((result) => {
       setFrames(result.frames || []);
-      setCategories(result.categories || []);
     }).catch(() => {});
   }, []);
 
@@ -82,13 +206,17 @@ export default function DesignStep({ styleData, onChange }) {
       qr_logo_path: logoUrl || null,
       qr_image_size: imageSize,
       qr_image_margin: imageMargin,
-      qr_error_correction: errorCorrection
+      qr_error_correction: errorCorrection,
     });
   }, [color, bgColor, pattern, cornersStyle, cornersDotStyle, frameStyle, frameText, frameTextColor, logoUrl, imageSize, imageMargin, errorCorrection]);
 
   const handleLogoUpload = useCallback(async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      setUploadError('El archivo no puede superar 2 MB.');
+      return;
+    }
     setUploading(true);
     setUploadError('');
     try {
@@ -102,12 +230,12 @@ export default function DesignStep({ styleData, onChange }) {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${session.access_token}`
+              Authorization: `Bearer ${session.access_token}`,
             },
-            body: JSON.stringify({ image: base64 })
+            body: JSON.stringify({ image: base64 }),
           }
         );
-        if (!res.ok) throw new Error((await res.json()).error ?? 'Upload error');
+        if (!res.ok) throw new Error((await res.json()).error ?? 'Error al subir');
         const { publicUrl } = await res.json();
         setLogoUrl(publicUrl);
         setUploading(false);
@@ -121,144 +249,200 @@ export default function DesignStep({ styleData, onChange }) {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-sm font-bold text-[#131d29]">3. Design your QR code</h3>
+      <h3 className="text-sm font-bold text-[#131d29]">3. Diseñá tu código QR</h3>
 
-      <CollapseSection title="Color">
-        <div className="flex gap-4">
-          <div>
-            <span className="text-xs text-[#6e6e6e] mb-1.5 block">Foreground</span>
-            <ColorPicker value={color} onChange={setColor} />
-          </div>
-          <div>
-            <span className="text-xs text-[#6e6e6e] mb-1.5 block">Background</span>
-            <ColorPicker value={bgColor} onChange={setBgColor} />
-          </div>
-        </div>
-      </CollapseSection>
-
-      <CollapseSection title="QR Code Pattern">
-        <div className="grid grid-cols-3 gap-2">
-          {QR_PATTERNS.map((p) => (
+      <AccordionCard
+        icon={() => (
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <rect x="6" y="6" width="12" height="12" rx="1" />
+          </svg>
+        )}
+        title="Marco"
+        subtitle="Los marcos hacen que tu código QR se destaque, inspirando más escaneos."
+      >
+        <div className="grid grid-cols-4 gap-2">
+          <button
+            type="button"
+            onClick={() => setFrameStyle('none')}
+            className={cn(
+              'py-2.5 rounded-lg border-2 text-xs font-semibold transition-all',
+              frameStyle === 'none'
+                ? 'border-[#8364ff] bg-[#f3f0ff] text-[#8364ff]'
+                : 'border-[#eeeeee] text-[#6e6e6e] hover:border-[#d5d5d5]'
+            )}
+          >
+            Sin marco
+          </button>
+          {frames.slice(0, 15).map((f) => (
             <button
-              key={p.value}
+              key={f.id}
               type="button"
-              onClick={() => setPattern(p.value)}
+              onClick={() => setFrameStyle(f.id)}
               className={cn(
-                'py-2 px-2 rounded-lg border text-xs font-semibold transition-colors',
-                pattern === p.value
+                'py-2.5 rounded-lg border-2 text-xs font-semibold transition-all truncate flex flex-col items-center gap-1',
+                frameStyle === f.id
                   ? 'border-[#8364ff] bg-[#f3f0ff] text-[#8364ff]'
-                  : 'border-[#eeeeee] text-[#6e6e6e] hover:text-[#131d29] hover:border-[#d5d5d5]'
+                  : 'border-[#eeeeee] text-[#6e6e6e] hover:border-[#d5d5d5]'
               )}
             >
-              {p.label}
+              <div className="w-8 h-8 rounded bg-[#f7f7f7] flex items-center justify-center">
+                <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
+                  <rect x="2" y="2" width="28" height="28" rx="3" stroke="#d0d0d0" strokeWidth="1.5" fill="none" />
+                  <rect x="5" y="5" width="22" height="22" rx="1" stroke="#d0d0d0" strokeWidth="1" fill="none" />
+                </svg>
+              </div>
+              <span className="text-[9px]">{f.name}</span>
             </button>
           ))}
         </div>
-      </CollapseSection>
-
-      <CollapseSection title="Corner Style">
-        <div className="space-y-3">
-          <div>
-            <span className="text-xs text-[#6e6e6e] mb-1.5 block">Outer Corners</span>
-            <div className="flex gap-2">
-              {CORNER_STYLES.map((c) => (
-                <button
-                  key={c.value}
-                  type="button"
-                  onClick={() => setCornersStyle(c.value)}
-                  className={cn(
-                    'flex-1 py-2 rounded-lg border text-xs font-semibold transition-colors',
-                    cornersStyle === c.value
-                      ? 'border-[#8364ff] bg-[#f3f0ff] text-[#8364ff]'
-                      : 'border-[#eeeeee] text-[#6e6e6e] hover:text-[#131d29] hover:border-[#d5d5d5]'
-                  )}
-                >
-                  {c.label}
-                </button>
-              ))}
+        {frameStyle !== 'none' && (
+          <div className="mt-4 pt-4 border-t border-[#f0f0f0] space-y-3">
+            <div>
+              <label className="block text-xs font-semibold text-[#6e6e6e] mb-1.5">Texto del marco</label>
+              <input
+                type="text"
+                value={frameText}
+                onChange={(e) => setFrameText(e.target.value)}
+                className="w-full h-10 rounded-lg border border-[#e0e0e0] bg-white px-3.5 text-sm focus:outline-none focus:border-[#8364ff] focus:ring-2 focus:ring-[#8364ff]/15"
+              />
+            </div>
+            <div>
+              <span className="block text-xs font-semibold text-[#6e6e6e] mb-1.5">Color del texto</span>
+              <ColorInput value={frameTextColor} onChange={setFrameTextColor} />
             </div>
           </div>
-          <div>
-            <span className="text-xs text-[#6e6e6e] mb-1.5 block">Inner Corners</span>
-            <div className="flex gap-2">
-              {INNER_CORNER_STYLES.map((c) => (
-                <button
-                  key={c.value}
-                  type="button"
-                  onClick={() => setCornersDotStyle(c.value)}
-                  className={cn(
-                    'flex-1 py-2 rounded-lg border text-xs font-semibold transition-colors',
-                    cornersDotStyle === c.value
-                      ? 'border-[#8364ff] bg-[#f3f0ff] text-[#8364ff]'
-                      : 'border-[#eeeeee] text-[#6e6e6e] hover:text-[#131d29] hover:border-[#d5d5d5]'
-                  )}
-                >
-                  {c.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </CollapseSection>
+        )}
+      </AccordionCard>
 
-      <CollapseSection title="Frame" defaultOpen={false}>
-        <div className="space-y-3">
-          <div className="grid grid-cols-4 gap-2">
-            <button
-              type="button"
-              onClick={() => setFrameStyle('none')}
-              className={cn(
-                'py-2 rounded-lg border text-xs font-semibold transition-colors',
-                frameStyle === 'none'
-                  ? 'border-[#8364ff] bg-[#f3f0ff] text-[#8364ff]'
-                  : 'border-[#eeeeee] text-[#6e6e6e] hover:text-[#131d29] hover:border-[#d5d5d5]'
-              )}
-            >
-              None
-            </button>
-            {frames.slice(0, 7).map((f) => (
-              <button
-                key={f.id}
-                type="button"
-                onClick={() => setFrameStyle(f.id)}
-                className={cn(
-                  'py-2 rounded-lg border text-xs font-semibold transition-colors truncate',
-                  frameStyle === f.id
-                    ? 'border-[#8364ff] bg-[#f3f0ff] text-[#8364ff]'
-                    : 'border-[#eeeeee] text-[#6e6e6e] hover:text-[#131d29] hover:border-[#d5d5d5]'
-                )}
-              >
-                {f.name}
-              </button>
-            ))}
-          </div>
-          {frameStyle !== 'none' && (
-            <div className="space-y-3 pt-3 border-t border-[#eeeeee]">
-              <label className="block">
-                <span className="text-xs text-[#6e6e6e]">Frame Text</span>
-                <input
-                  type="text"
-                  value={frameText}
-                  onChange={(e) => setFrameText(e.target.value)}
-                  className="mt-1 w-full h-9 rounded-lg border border-[#eeeeee] px-3 text-sm focus:outline-none focus:border-[#8364ff] focus:ring-2 focus:ring-[#8364ff]/15"
+      <AccordionCard
+        icon={() => (
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <rect x="3" y="3" width="7" height="7" rx="1" />
+            <rect x="14" y="3" width="7" height="7" rx="1" />
+            <rect x="3" y="14" width="7" height="7" rx="1" />
+            <rect x="14" y="14" width="7" height="7" rx="1" />
+          </svg>
+        )}
+        title="Patrón del código QR"
+        subtitle="Elegí un patrón para tu código QR y seleccioná los colores."
+      >
+        <div className="space-y-4">
+          <div>
+            <span className="text-xs font-semibold text-[#6e6e6e] mb-2 block">Estilo del patrón</span>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              {QR_PATTERNS.map((p) => (
+                <PatternThumbnail
+                  key={p.value}
+                  type={p.value}
+                  selected={pattern === p.value}
+                  onClick={() => setPattern(p.value)}
                 />
-              </label>
-              <div>
-                <span className="text-xs text-[#6e6e6e] mb-1 block">Text Color</span>
-                <ColorPicker value={frameTextColor} onChange={setFrameTextColor} />
-              </div>
+              ))}
             </div>
-          )}
+          </div>
+          <div>
+            <span className="text-xs font-semibold text-[#6e6e6e] mb-2 block">Color del patrón</span>
+            <ToggleSwitch
+              label="Usar gradiente de color"
+              value={gradientPattern}
+              onChange={setGradientPattern}
+            />
+            <div className="mt-2">
+              <ColorInput value={color} onChange={setColor} />
+            </div>
+          </div>
+          <div>
+            <span className="text-xs font-semibold text-[#6e6e6e] mb-2 block">Color de fondo</span>
+            <ToggleSwitch
+              label="Fondo transparente"
+              value={transparentBg}
+              onChange={setTransparentBg}
+              note="Recordá: para una lectura óptima del código QR, recomendamos usar colores de alto contraste."
+            />
+            {!transparentBg && (
+              <>
+                <ToggleSwitch
+                  label="Usar gradiente de color de fondo"
+                  value={gradientBg}
+                  onChange={setGradientBg}
+                />
+                <div className="mt-2">
+                  <ColorInput value={bgColor} onChange={setBgColor} />
+                </div>
+              </>
+            )}
+          </div>
         </div>
-      </CollapseSection>
+      </AccordionCard>
 
-      <CollapseSection title="Logo" defaultOpen={false}>
+      <AccordionCard
+        icon={() => (
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path d="M2 2h6v6H2z" />
+            <path d="M16 2h6v6h-6z" />
+            <path d="M2 16h6v6H2z" />
+            <circle cx="19" cy="19" r="3" fill="currentColor" />
+          </svg>
+        )}
+        title="Esquinas del código QR"
+        subtitle="Seleccioná el estilo de las esquinas de tu código QR."
+      >
+        <div className="space-y-4">
+          <div>
+            <span className="text-xs font-semibold text-[#6e6e6e] mb-2 block">Estilo de esquinas exteriores</span>
+            <div className="grid grid-cols-3 gap-2">
+              {CORNER_STYLES.map((c) => (
+                <CornerThumbnail
+                  key={c.value}
+                  type={c.value}
+                  selected={cornersStyle === c.value}
+                  onClick={() => setCornersStyle(c.value)}
+                />
+              ))}
+            </div>
+          </div>
+          <div>
+            <span className="text-xs font-semibold text-[#6e6e6e] mb-2 block">Estilo de esquinas interiores</span>
+            <div className="grid grid-cols-2 gap-2">
+              {INNER_CORNER_STYLES.map((c) => (
+                <CornerThumbnail
+                  key={c.value}
+                  type={c.value}
+                  selected={cornersDotStyle === c.value}
+                  onClick={() => setCornersDotStyle(c.value)}
+                />
+              ))}
+            </div>
+          </div>
+          <div>
+            <span className="text-xs font-semibold text-[#6e6e6e] mb-2 block">Color de esquinas</span>
+            <ColorInput value={color} onChange={setColor} label="" />
+          </div>
+        </div>
+      </AccordionCard>
+
+      <AccordionCard
+        icon={() => (
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <circle cx="8.5" cy="8.5" r="1.5" />
+            <path d="M21 15l-5-5L5 21" />
+          </svg>
+        )}
+        title="Agregar logo"
+        subtitle="Hacé único tu código QR agregando tu logo o una imagen."
+      >
         <div className="space-y-3">
           {!logoUrl ? (
-            <label className="flex flex-col items-center gap-2 py-4 px-3 border-2 border-dashed border-[#d5d5d5] rounded-xl cursor-pointer hover:border-[#8364ff] hover:bg-[#f3f0ff]/30 transition-colors">
-              <Upload className="w-5 h-5 text-[#6e6e6e]" />
-              <span className="text-xs font-semibold text-[#6e6e6e]">Upload Logo</span>
-              <span className="text-[10px] text-[#a0a0a0]">PNG, JPG, SVG, WEBP (max 2MB)</span>
+            <label className="flex flex-col items-center gap-3 py-8 px-3 border-2 border-dashed border-[#d5d5d5] rounded-xl cursor-pointer hover:border-[#8364ff] hover:bg-[#f3f0ff]/20 transition-all">
+              <div className="w-12 h-12 rounded-xl bg-[#f3f0ff] flex items-center justify-center">
+                <Upload className="w-6 h-6 text-[#8364ff]" />
+              </div>
+              <div className="text-center">
+                <p className="text-sm font-semibold text-[#131d29]">Subir tu logo</p>
+                <p className="text-xs text-[#a0a0a0] mt-0.5">Tamaño máximo: 2 MB</p>
+              </div>
               <input
                 type="file"
                 accept="image/png,image/jpeg,image/svg+xml,image/webp"
@@ -268,29 +452,47 @@ export default function DesignStep({ styleData, onChange }) {
               />
             </label>
           ) : (
-            <div className="flex items-center gap-3 p-3 bg-[#f7f7f7] rounded-xl">
-              <img src={logoUrl} alt="Logo" className="w-10 h-10 object-contain rounded-lg border border-[#eeeeee]" />
+            <div className="flex items-center gap-4 p-3 bg-[#f7f7f7] rounded-xl">
+              <img
+                src={logoUrl}
+                alt="Logo"
+                className="w-14 h-14 object-contain rounded-lg border border-[#e0e0e0] bg-white"
+              />
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-[#131d29] truncate">Logo uploaded</p>
-                <div className="flex gap-3 mt-1">
-                  <label className="text-xs text-[#8364ff] cursor-pointer hover:underline">
-                    Change
-                    <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+                <p className="text-xs font-semibold text-[#131d29]">Logo cargado</p>
+                <div className="flex gap-3 mt-2">
+                  <label className="text-xs text-[#8364ff] cursor-pointer hover:underline font-semibold">
+                    Cambiar
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleLogoUpload}
+                      className="hidden"
+                    />
                   </label>
-                  <button type="button" onClick={() => setLogoUrl('')} className="text-xs text-red-400 hover:underline">
-                    Remove
+                  <button
+                    type="button"
+                    onClick={() => setLogoUrl('')}
+                    className="text-xs text-red-400 hover:underline font-semibold"
+                  >
+                    Eliminar
                   </button>
                 </div>
               </div>
-              <Trash2 className="w-4 h-4 text-[#a0a0a0] cursor-pointer hover:text-red-400" onClick={() => setLogoUrl('')} />
+              <Trash2
+                className="w-5 h-5 text-[#a0a0a0] cursor-pointer hover:text-red-400 transition-colors"
+                onClick={() => setLogoUrl('')}
+              />
             </div>
           )}
-          {uploading && <p className="text-xs text-[#6e6e6e]">Uploading...</p>}
+          {uploading && <p className="text-xs text-[#6e6e6e]">Subiendo...</p>}
           {uploadError && <p className="text-xs text-red-400">{uploadError}</p>}
           {logoUrl && (
-            <div className="space-y-2">
-              <label className="block">
-                <span className="text-xs text-[#6e6e6e]">Logo Size ({Math.round(imageSize * 100)}%)</span>
+            <div className="space-y-3 pt-2">
+              <div>
+                <span className="text-xs font-semibold text-[#6e6e6e] mb-1.5 block">
+                  Tamaño del logo ({Math.round(imageSize * 100)}%)
+                </span>
                 <input
                   type="range"
                   min="0.1"
@@ -298,11 +500,13 @@ export default function DesignStep({ styleData, onChange }) {
                   step="0.05"
                   value={imageSize}
                   onChange={(e) => setImageSize(parseFloat(e.target.value))}
-                  className="mt-1 w-full h-1.5 bg-[#eeeeee] rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#8364ff]"
+                  className="w-full h-1.5 bg-[#e0e0e0] rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#8364ff]"
                 />
-              </label>
-              <label className="block">
-                <span className="text-xs text-[#6e6e6e]">Logo Margin ({imageMargin}px)</span>
+              </div>
+              <div>
+                <span className="text-xs font-semibold text-[#6e6e6e] mb-1.5 block">
+                  Margen del logo ({imageMargin}px)
+                </span>
                 <input
                   type="range"
                   min="0"
@@ -310,39 +514,13 @@ export default function DesignStep({ styleData, onChange }) {
                   step="1"
                   value={imageMargin}
                   onChange={(e) => setImageMargin(parseInt(e.target.value))}
-                  className="mt-1 w-full h-1.5 bg-[#eeeeee] rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#8364ff]"
+                  className="w-full h-1.5 bg-[#e0e0e0] rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#8364ff]"
                 />
-              </label>
+              </div>
             </div>
           )}
         </div>
-      </CollapseSection>
-
-      <CollapseSection title="Error Correction" defaultOpen={false}>
-        <div className="grid grid-cols-4 gap-2">
-          {[
-            { value: 'L', label: 'Low (7%)' },
-            { value: 'M', label: 'Medium (15%)' },
-            { value: 'Q', label: 'High (25%)' },
-            { value: 'H', label: 'Max (30%)' }
-          ].map((l) => (
-            <button
-              key={l.value}
-              type="button"
-              onClick={() => setErrorCorrection(l.value)}
-              className={cn(
-                'py-2 rounded-lg border text-xs font-semibold transition-colors',
-                errorCorrection === l.value
-                  ? 'border-[#8364ff] bg-[#f3f0ff] text-[#8364ff]'
-                  : 'border-[#eeeeee] text-[#6e6e6e] hover:text-[#131d29] hover:border-[#d5d5d5]'
-              )}
-            >
-              <div>{l.label.split(' ')[0]}</div>
-              <div className="text-[10px] opacity-70">{l.label.split(' ').slice(1).join(' ')}</div>
-            </button>
-          ))}
-        </div>
-      </CollapseSection>
+      </AccordionCard>
     </div>
   );
 }

@@ -6,18 +6,19 @@ export default function TypeSelector({ selected, onSelect }) {
     <div>
       <div className="text-center mb-8">
         <div className="inline-flex items-center gap-2 mb-2">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M3 7l4-4 14 14-4 4L3 7z" stroke="#8364ff" strokeWidth="1.5" fill="none" />
-            <circle cx="18.5" cy="5.5" r="1.5" fill="#8364ff" />
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M3 7l5-5 13 13-5 5L3 7z" stroke="#8364ff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M6 4l3 3" stroke="#8364ff" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M17 17l2 2" stroke="#8364ff" strokeWidth="1.5" strokeLinecap="round" />
           </svg>
-          <span className="text-sm font-bold text-[#8364ff] uppercase tracking-wide">Choose a QR Type</span>
+          <span className="text-sm font-bold text-[#8364ff] uppercase tracking-wide">Elegí un tipo de QR</span>
         </div>
         <h1 className="text-xl font-bold text-[#131d29]">
-          Easily create a QR code <span className="font-normal text-[#6e6e6e]">for any occasion in seconds!</span>
+          Creá un código QR <span className="font-normal text-[#6e6e6e]">para cualquier ocasión en segundos</span>
         </h1>
       </div>
 
-      <h2 className="text-sm font-bold text-[#131d29] mb-4">1. Select a type of QR code</h2>
+      <h2 className="text-sm font-bold text-[#131d29] mb-4">1. Seleccioná un tipo de código QR</h2>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
         {Object.values(QR_TYPES).sort((a, b) => a.order - b.order).map((type) => {
@@ -28,17 +29,17 @@ export default function TypeSelector({ selected, onSelect }) {
               key={type.id}
               onClick={() => onSelect(type.id)}
               className={cn(
-                'group relative flex flex-col items-center gap-3 p-4 rounded-xl border-2 transition-all duration-150 text-center cursor-pointer',
+                'group relative flex flex-col items-center gap-3 p-4 rounded-xl border-2 transition-all duration-150 text-center',
                 isSelected
                   ? 'border-[#8364ff] bg-[#f3f0ff] shadow-sm'
-                  : 'border-[#eeeeee] bg-white hover:border-[#d5d5d5] hover:shadow-sm'
+                  : 'border-[#e8e8ed] bg-white hover:border-[#d5d5d5] hover:shadow-sm'
               )}
             >
               <div className={cn(
-                'w-10 h-10 rounded-xl flex items-center justify-center transition-colors',
-                isSelected ? 'bg-[#8364ff] text-white' : 'bg-[#f7f7f7] text-[#6e6e6e] group-hover:text-[#131d29]'
+                'w-11 h-11 rounded-xl flex items-center justify-center transition-colors',
+                isSelected ? 'bg-[#8364ff] text-white' : 'bg-[#f3f0ff] text-[#8364ff] group-hover:bg-[#ede8ff]'
               )}>
-                <Icon />
+                <Icon className="w-5 h-5" />
               </div>
               <div>
                 <div className={cn(
@@ -51,16 +52,13 @@ export default function TypeSelector({ selected, onSelect }) {
                   {type.description}
                 </div>
               </div>
-              <div className={cn(
-                'absolute top-2 right-2 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all',
-                isSelected ? 'border-[#8364ff] bg-[#8364ff]' : 'border-[#d5d5d5] bg-white'
-              )}>
-                {isSelected && (
+              {isSelected && (
+                <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-[#8364ff] flex items-center justify-center">
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
-                )}
-              </div>
+                </div>
+              )}
             </button>
           );
         })}

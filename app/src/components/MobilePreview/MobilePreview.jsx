@@ -1,68 +1,96 @@
 import { useState } from 'react';
 import { cn } from '../../lib/cn';
-import { Tabs } from '../ui';
-import { Monitor, QrCode } from 'lucide-react';
 
-export default function MobilePreview({ children, qrContent, showQr = true }) {
-  const [tab, setTab] = useState(0);
+export default function MobilePreview({ children, qrContent, tabs = true, qrTabEnabled = false, defaultTab = 0 }) {
+  const [tab, setTab] = useState(defaultTab);
 
   return (
     <div className="flex flex-col items-center">
-      <div className="mb-4 w-48">
-        {showQr && (
-          <Tabs
-            tabs={[
-              { label: 'Preview', disabled: false },
-              { label: 'QR code', disabled: qrContent === undefined }
-            ]}
-            activeTab={tab}
-            onChange={setTab}
-          />
-        )}
-      </div>
+      {tabs && (
+        <div className="mb-5 bg-[#f0f0f0] rounded-xl p-1 flex w-56">
+          <button
+            onClick={() => setTab(0)}
+            className={cn(
+              'flex-1 h-9 rounded-lg text-sm font-semibold transition-all duration-200',
+              tab === 0
+                ? 'bg-white text-[#131d29] shadow-sm'
+                : 'text-[#6e6e6e] hover:text-[#131d29]'
+            )}
+          >
+            Vista previa
+          </button>
+          <button
+            onClick={() => setTab(1)}
+            disabled={!qrTabEnabled}
+            className={cn(
+              'flex-1 h-9 rounded-lg text-sm font-semibold transition-all duration-200',
+              tab === 1
+                ? 'bg-white text-[#131d29] shadow-sm'
+                : !qrTabEnabled
+                  ? 'text-[#c0c0c0] cursor-not-allowed'
+                  : 'text-[#6e6e6e] hover:text-[#131d29]'
+            )}
+          >
+            Código QR
+          </button>
+        </div>
+      )}
 
       <div className="relative">
-        {/* iPhone mockup */}
         <svg
           width="280"
-          height="580"
-          viewBox="0 0 280 580"
+          height="570"
+          viewBox="0 0 280 570"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          className="drop-shadow-2xl"
+          className="drop-shadow-[0_8px_32px_rgba(0,0,0,0.12)]"
         >
-          <rect x="0.5" y="0.5" width="279" height="579" rx="39.5" fill="white" stroke="#e5e5e5" />
-          <rect x="12" y="12" width="256" height="556" rx="28" fill="white" />
-          <rect x="108" y="32" width="64" height="4" rx="2" fill="#e5e5e5" />
-          <circle cx="139.5" cy="557.5" r="1.5" fill="#d5d5d5" />
-          <line x1="124" y1="560" x2="156" y2="560" stroke="#d5d5d5" strokeWidth="3" strokeLinecap="round" />
+          <defs>
+            <linearGradient id="phoneFrame" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#3a3a3c" />
+              <stop offset="50%" stopColor="#1c1c1e" />
+              <stop offset="100%" stopColor="#2c2c2e" />
+            </linearGradient>
+            <linearGradient id="phoneScreen" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#f0f0f5" />
+              <stop offset="100%" stopColor="#e8e8f0" />
+            </linearGradient>
+          </defs>
+          <rect x="0.5" y="0.5" width="279" height="569" rx="45" fill="url(#phoneFrame)" stroke="#1a1a1c" strokeWidth="1" />
+          <rect x="8" y="8" width="264" height="554" rx="38" fill="url(#phoneScreen)" />
+          <rect x="85" y="24" width="110" height="26" rx="13" fill="#1a1a1c" />
+          <circle cx="139" cy="561" r="1.5" fill="#3a3a3c" />
+          <line x1="124" y1="563" x2="155" y2="563" stroke="#3a3a3c" strokeWidth="3" strokeLinecap="round" />
+          <rect x="16" y="56" width="1.5" height="200" rx="0.75" fill="rgba(0,0,0,0.06)" />
         </svg>
 
-        {/* Screen content */}
-        <div className="absolute top-[44px] left-[24px] w-[232px] h-[524px] rounded-[20px] overflow-hidden bg-white">
+        <div className="absolute top-[48px] left-[22px] w-[236px] h-[500px] rounded-[28px] overflow-hidden bg-white">
           {tab === 0 ? (
             <div className="w-full h-full overflow-y-auto scrollbar-hide">
               {children ? (
                 children
               ) : (
                 <div className="flex flex-col items-center justify-center h-full p-4 text-center">
-                  <div className="w-16 h-16 rounded-2xl bg-[#f3f0ff] flex items-center justify-center mb-4">
-                    <Monitor className="w-8 h-8 text-[#8364ff]" />
+                  <div className="w-14 h-14 rounded-2xl bg-[#f3f0ff] flex items-center justify-center mb-3">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#8364ff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="2" y="3" width="20" height="14" rx="2" />
+                      <path d="M8 21h8M12 17v4" />
+                    </svg>
                   </div>
-                  <p className="text-xs text-[#a0a0a0]">
-                    Select a type of QR code on the left
+                  <p className="text-xs text-[#a0a0a0] leading-relaxed">
+                    Seleccioná un tipo de código QR a la izquierda
                   </p>
                 </div>
               )}
             </div>
           ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center p-4">
+            <div className="w-full h-full flex items-center justify-center bg-white p-4">
               {qrContent ? (
                 qrContent
               ) : (
-                <div className="flex flex-col items-center gap-4">
+                <div className="flex flex-col items-center gap-3">
                   <div className="animate-spin rounded-full h-8 w-8 border-2 border-[#8364ff] border-t-transparent" />
-                  <p className="text-xs text-[#a0a0a0]">QR code will appear here</p>
+                  <p className="text-xs text-[#a0a0a0]">Generando QR...</p>
                 </div>
               )}
             </div>
