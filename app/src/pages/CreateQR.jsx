@@ -10,9 +10,16 @@ import InstagramForm from '../components/PlatformForms/InstagramForm';
 import TelegramForm from '../components/PlatformForms/TelegramForm';
 import TwitterForm from '../components/PlatformForms/TwitterForm';
 import LinkedInForm from '../components/PlatformForms/LinkedInForm';
+import FacebookForm from '../components/PlatformForms/FacebookForm';
+import WiFiForm from '../components/PlatformForms/WiFiForm';
+import VCardForm from '../components/PlatformForms/VCardForm';
+import LinkListForm from '../components/PlatformForms/LinkListForm';
+import AppStoreForm from '../components/PlatformForms/AppStoreForm';
+import MultiSocialForm from '../components/PlatformForms/MultiSocialForm';
 import ExpiryConfig from '../components/ExpiryConfig/ExpiryConfig';
 import QRStyleEditor from '../components/QREditor/QRStyleEditor';
 import QRPreview from '../components/QREditor/QRPreview';
+import PhoneMockup from '../components/PhoneMockup';
 
 const PLATFORM_FORMS = {
   whatsapp: { component: WhatsAppForm },
@@ -20,8 +27,14 @@ const PLATFORM_FORMS = {
   telegram: { component: TelegramForm },
   twitter: { component: TwitterForm },
   linkedin: { component: LinkedInForm },
+  facebook: { component: FacebookForm },
   url: { component: UrlForm },
-  drive: { component: DriveForm }
+  drive: { component: DriveForm },
+  wifi: { component: WiFiForm },
+  vcard: { component: VCardForm },
+  linklist: { component: LinkListForm },
+  appstore: { component: AppStoreForm },
+  multisocial: { component: MultiSocialForm }
 };
 
 const PASOS = [
@@ -204,7 +217,18 @@ export default function CreateQR() {
                 />
               </label>
 
-              <FormComponent onChange={handleFormChange} />
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <FormComponent onChange={handleFormChange} />
+                </div>
+                <div className="flex items-center justify-center">
+                  <PhoneMockup>
+                    <div className="w-full p-4 text-center text-xs text-gray-400">
+                      Vista previa de la landing page
+                    </div>
+                  </PhoneMockup>
+                </div>
+              </div>
             </div>
           )}
 
@@ -218,7 +242,8 @@ export default function CreateQR() {
               <div className="grid md:grid-cols-2 gap-6">
                 <QRStyleEditor onChange={setStyleData} />
                 <div className="flex items-center justify-center">
-                  <QRPreview
+                  <PhoneMockup>
+                    <QRPreview
                     shortlink={previewUrl}
                     qrColor={styleData.qr_color ?? '#000000'}
                     qrBgColor={styleData.qr_bg_color ?? '#FFFFFF'}
@@ -232,9 +257,10 @@ export default function CreateQR() {
                     qrFrameStyle={styleData.qr_frame_style ?? 'none'}
                     qrFrameText={styleData.qr_frame_text ?? 'Scan me'}
                     qrFrameTextColor={styleData.qr_frame_text_color ?? '#000000'}
-                    size={200}
+                    size={180}
                     showActions={false}
                   />
+                  </PhoneMockup>
                 </div>
               </div>
             </div>

@@ -54,3 +54,71 @@ export function DriveIcon({ className = 'w-5 h-5' }) {
     </svg>
   );
 }
+
+export function WiFiIcon({ className = 'w-5 h-5' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 20h.01"/>
+      <path d="M8.5 16.43a5 5 0 017.01 0"/>
+      <path d="M5 12.86a9.97 9.97 0 0114 0"/>
+      <path d="M2 8.82a15 15 0 0120 0"/>
+    </svg>
+  );
+}
+
+export function VCardIcon({ className = 'w-5 h-5' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/>
+      <circle cx="9" cy="7" r="4"/>
+      <rect x="16" y="3" width="6" height="18" rx="1"/>
+      <path d="M18 9h2"/>
+      <path d="M18 13h2"/>
+      <path d="M18 17h2"/>
+    </svg>
+  );
+}
+
+export function FacebookIcon({ className = 'w-5 h-5' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+    </svg>
+  );
+}
+
+export function LinkListIcon({ className = 'w-5 h-5' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+      <path d="M8 20v1"/>
+      <path d="M16 3v1"/>
+      <path d="M4 12H3"/>
+      <path d="M21 12h-1"/>
+    </svg>
+  );
+}
+
+export function AppStoreIcon({ className = 'w-5 h-5' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="5" y="2" width="14" height="20" rx="2"/>
+      <path d="M12 18h.01"/>
+      <path d="M9 6l3 4 3-4"/>
+      <path d="M9 10h6"/>
+    </svg>
+  );
+}
+
+export function MultiSocialIcon({ className = 'w-5 h-5' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="18" cy="5" r="3"/>
+      <circle cx="6" cy="12" r="3"/>
+      <circle cx="18" cy="19" r="3"/>
+      <path d="M8.59 13.51l6.83 3.98"/>
+      <path d="M15.41 6.51l-6.82 3.98"/>
+    </svg>
+  );
+}

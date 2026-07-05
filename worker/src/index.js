@@ -91,6 +91,10 @@ export default {
       });
     } catch {}
 
+    if (['linklist', 'appstore', 'multisocial', 'wifi', 'vcard'].includes(qr.platform)) {
+      return Response.redirect(`${env.APP_URL}/landing/${qr.slug}`, 302);
+    }
+
     return Response.redirect(qr.destination_url, 302);
   }
 };

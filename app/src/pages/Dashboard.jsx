@@ -2,10 +2,10 @@ import { useState, useMemo, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useQR } from '../hooks/useQR';
-import { logout } from '../lib/supabase';
+import { logout, supabase } from '../lib/supabase';
 import { PLATFORMS } from '../lib/platforms';
 import QRPreview from '../components/QREditor/QRPreview';
-import { generateQRCode, downloadQRPNG, downloadQRSVG } from '../lib/qr-generator';
+import { generateQRCode, downloadQRPNG, downloadQRSVG, downloadQRJPG } from '../lib/qr-generator';
 
 const FILTROS = [
   { value: 'all', label: 'Todos' },
@@ -24,6 +24,8 @@ export default function Dashboard() {
   const [filtro, setFiltro] = useState('all');
   const [busqueda, setBusqueda] = useState('');
   const [pagina, setPagina] = useState(1);
+  const [selected, setSelected] = useState(new Set());
+  const [selectAll, setSelectAll] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) navigate('/login');
@@ -52,7 +54,62 @@ export default function Dashboard() {
 
   useEffect(() => {
     setPagina(1);
+    setSelected(new Set());
+    setSelectAll(false);
   }, [filtro, busqueda]);
+
+  const toggleSelect = (id) => {
+    const next = new Set(selected);
+    if (next.has(id)) { next.delete(id); setSelectAll(false); }
+    else next.add(id);
+    setSelected(next);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectAll) {
+      setSelected(new Set());
+      setSelectAll(false);
+    } else {
+      setSelected(new Set(paginados.map(q => q.id)));
+      setSelectAll(true);
+    }
+  };
+
+  const bulkDelete = async () => {
+    const ids = [...selected];
+    for (const id of ids) await deleteQR(id);
+    setSelected(new Set());
+    setSelectAll(false);
+  };
+
+  const bulkStatus = async (status) => {
+    for (const id of selected) {
+      await supabase.from('qr_codes').update({ status }).eq('id', id);
+    }
+    window.location.reload();
+  };
+
+  const bulkDownloadPNG = () => {
+    for (const id of selected) {
+      const qr = qrCodes.find(q => q.id === id);
+      if (!qr) continue;
+      const shortlink = `${import.meta.env.VITE_WORKER_URL}/q/${qr.slug}`;
+      const code = generateQRCode(shortlink, {
+        qrColor: qr.qr_color ?? '#000000',
+        qrBgColor: qr.qr_bg_color ?? '#FFFFFF',
+        qrStyle: qr.qr_style ?? 'square',
+        qrCornersStyle: qr.qr_corners_style ?? 'square',
+        qrCornersDotStyle: qr.qr_corners_dot_style ?? 'square',
+        qrLogoUrl: qr.qr_logo_path,
+        qrImageSize: qr.qr_image_size ?? 0.4,
+        qrImageMargin: qr.qr_image_margin ?? 0,
+        qrErrorCorrection: qr.qr_error_correction ?? 'H',
+        width: 1024,
+        height: 1024
+      });
+      setTimeout(() => downloadQRPNG(code, `qr-${qr.slug}`), 200);
+    }
+  };
 
   if (authLoading) {
     return (
@@ -116,6 +173,16 @@ export default function Dashboard() {
           ))}
         </div>
 
+        {selected.size > 0 && (
+          <div className="flex items-center gap-2 mb-4 p-3 bg-gray-100 rounded-lg">
+            <span className="text-sm font-medium">{selected.size} seleccionados</span>
+            <button onClick={bulkDelete} className="px-3 py-1 text-xs bg-red-600 text-white rounded-lg hover:bg-red-700 transition">Eliminar</button>
+            <button onClick={() => bulkStatus('active')} className="px-3 py-1 text-xs bg-green-600 text-white rounded-lg hover:bg-green-700 transition">Activar</button>
+            <button onClick={() => bulkStatus('paused')} className="px-3 py-1 text-xs bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition">Pausar</button>
+            <button onClick={bulkDownloadPNG} className="px-3 py-1 text-xs bg-black text-white rounded-lg hover:bg-gray-800 transition">Descargar PNG</button>
+          </div>
+        )}
+
         {loading ? (
           <div className="flex justify-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black" />
@@ -134,7 +201,7 @@ export default function Dashboard() {
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {paginados.map(qr => (
-                <QRCard key={qr.id} qr={qr} onDelete={deleteQR} />
+                <QRCard key={qr.id} qr={qr} onDelete={deleteQR} selected={selected.has(qr.id)} onToggleSelect={() => toggleSelect(qr.id)} />
               ))}
             </div>
 
@@ -168,7 +235,7 @@ export default function Dashboard() {
   );
 }
 
-function QRCard({ qr, onDelete }) {
+function QRCard({ qr, onDelete, selected, onToggleSelect }) {
   const shortlink = `${import.meta.env.VITE_WORKER_URL}/q/${qr.slug}`;
   const platform = PLATFORMS[qr.platform] || PLATFORMS.url;
   const Icon = platform.Icon;
@@ -199,7 +266,8 @@ function QRCard({ qr, onDelete }) {
       height: 1024
     });
     if (extension === 'png') downloadQRPNG(code, `qr-${qr.slug}`);
-    else downloadQRSVG(code, `qr-${qr.slug}`);
+    else if (extension === 'svg') downloadQRSVG(code, `qr-${qr.slug}`);
+    else if (extension === 'jpg') downloadQRJPG(code, `qr-${qr.slug}`);
   };
 
   const statusColors = {
@@ -215,7 +283,15 @@ function QRCard({ qr, onDelete }) {
   };
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition">
+    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition relative">
+      <div className="absolute top-2 left-2 z-10">
+        <input
+          type="checkbox"
+          checked={selected || false}
+          onChange={onToggleSelect}
+          className="w-4 h-4 rounded border-gray-300 text-black focus:ring-black"
+        />
+      </div>
       <div className="p-4 flex gap-4">
         <div className="shrink-0">
           <QRPreview
@@ -267,6 +343,12 @@ function QRCard({ qr, onDelete }) {
             className="text-xs font-medium px-2 py-1.5 bg-black text-white rounded-lg hover:bg-gray-800 transition"
           >
             PNG
+          </button>
+          <button
+            onClick={() => handleDownload('jpg')}
+            className="text-xs font-medium px-2 py-1.5 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
+          >
+            JPG
           </button>
           <button
             onClick={() => handleDownload('svg')}

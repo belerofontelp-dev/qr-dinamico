@@ -88,3 +88,19 @@ export function downloadQRPNG(qrCode, filename = 'qr-code') {
 export function downloadQRSVG(qrCode, filename = 'qr-code') {
   qrCode.download({ name: filename, extension: 'svg' });
 }
+
+export function downloadQRJPG(qrCode, filename = 'qr-code') {
+  if (qrCode && qrCode._canvas && qrCode._canvas.getContext) {
+    const canvas = qrCode._canvas;
+    canvas.toBlob((blob) => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${filename}.jpg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 'image/jpeg', 0.95);
+  }
+}

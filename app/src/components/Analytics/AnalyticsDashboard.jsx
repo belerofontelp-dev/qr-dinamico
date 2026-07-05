@@ -27,6 +27,31 @@ export default function AnalyticsDashboard({ qrId }) {
     fetchStats();
   }, [qrId]);
 
+  const exportCSV = () => {
+    if (!stats) return;
+    let csv = 'Fecha,País,Dispositivo\n';
+    if (stats.timeline) {
+      stats.timeline.forEach(row => {
+        csv += `${row.date},,\n`;
+      });
+    }
+    if (stats.by_country) {
+      csv = 'País,Escaneos\n';
+      stats.by_country.forEach(row => {
+        csv += `${row.country},${row.count}\n`;
+      });
+    }
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `qr-stats-${qrId}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center py-12">
@@ -39,6 +64,16 @@ export default function AnalyticsDashboard({ qrId }) {
 
   return (
     <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm font-medium">Estadísticas del QR</h2>
+        <button
+          onClick={exportCSV}
+          className="text-xs font-medium px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-gray-100 transition"
+        >
+          Exportar CSV
+        </button>
+      </div>
+
       <div className="grid grid-cols-3 gap-3">
         <KpiCard label="Total" value={stats.total_scans} />
         <KpiCard label="Hoy" value={stats.today} />

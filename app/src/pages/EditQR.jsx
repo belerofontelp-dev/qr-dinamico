@@ -14,6 +14,13 @@ import InstagramForm from '../components/PlatformForms/InstagramForm';
 import TelegramForm from '../components/PlatformForms/TelegramForm';
 import TwitterForm from '../components/PlatformForms/TwitterForm';
 import LinkedInForm from '../components/PlatformForms/LinkedInForm';
+import FacebookForm from '../components/PlatformForms/FacebookForm';
+import WiFiForm from '../components/PlatformForms/WiFiForm';
+import VCardForm from '../components/PlatformForms/VCardForm';
+import LinkListForm from '../components/PlatformForms/LinkListForm';
+import AppStoreForm from '../components/PlatformForms/AppStoreForm';
+import MultiSocialForm from '../components/PlatformForms/MultiSocialForm';
+import PhoneMockup from '../components/PhoneMockup';
 
 const PLATFORM_FORMS = {
   whatsapp: WhatsAppForm,
@@ -21,8 +28,14 @@ const PLATFORM_FORMS = {
   telegram: TelegramForm,
   twitter: TwitterForm,
   linkedin: LinkedInForm,
+  facebook: FacebookForm,
   url: UrlForm,
-  drive: DriveForm
+  drive: DriveForm,
+  wifi: WiFiForm,
+  vcard: VCardForm,
+  linklist: LinkListForm,
+  appstore: AppStoreForm,
+  multisocial: MultiSocialForm
 };
 
 const TABS = [
@@ -284,7 +297,8 @@ export default function EditQR() {
             <div className="bg-white rounded-xl border border-gray-200 p-6">
               <h2 className="text-lg font-semibold mb-4">Vista previa</h2>
               <div className="max-w-sm mx-auto">
-                <QRPreview
+                <PhoneMockup>
+                  <QRPreview
                   shortlink={shortlink}
                   qrColor={form.qr_color}
                   qrBgColor={form.qr_bg_color}
@@ -298,8 +312,9 @@ export default function EditQR() {
                   qrFrameStyle={form.qr_frame_style}
                   qrFrameText={form.qr_frame_text}
                   qrFrameTextColor={form.qr_frame_text_color}
-                  size={240}
+                  size={200}
                 />
+                </PhoneMockup>
               </div>
             </div>
           </div>

@@ -6,6 +6,7 @@ import CreateQR from './pages/CreateQR';
 import EditQR from './pages/EditQR';
 import Expired from './pages/Expired';
 import Landing from './pages/Landing';
+import LandingPage from './pages/LandingPage';
 
 class ErrorBoundary extends Component {
   constructor(props) {
@@ -46,6 +47,7 @@ export default function App() {
         <Route path="/create" element={<CreateQR />} />
         <Route path="/edit/:id" element={<EditQR />} />
         <Route path="/expired" element={<Expired />} />
+        <Route path="/landing/:slug" element={<LandingPage />} />
       </Routes>
     </ErrorBoundary>
   );
