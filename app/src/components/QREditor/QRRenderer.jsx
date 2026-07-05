@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { generateQRCode, renderQRCode, downloadQRPNG, downloadQRSVG } from '../../lib/qr-generator';
+import { generateQRCode } from '../../lib/qr-generator';
 
 export default function QRRenderer({
   shortlink,
@@ -12,7 +12,8 @@ export default function QRRenderer({
   qrImageSize = 0.4,
   qrImageMargin = 0,
   qrErrorCorrection = 'H',
-  size = 180
+  size = 200,
+  onReady
 }) {
   const containerRef = useRef(null);
   const qrRef = useRef(null);
@@ -20,7 +21,17 @@ export default function QRRenderer({
   useEffect(() => {
     if (!shortlink || !containerRef.current) return;
 
-    qrRef.current = generateQRCode(shortlink, {
+    // Limpiar contenedor anterior
+    const el = containerRef.current;
+    el.innerHTML = '';
+
+    // Destruir instancia anterior si existe
+    if (qrRef.current) {
+      qrRef.current = null;
+    }
+
+    // Crear nueva instancia
+    const qr = generateQRCode(shortlink, {
       qrColor,
       qrBgColor,
       qrStyle,
@@ -34,18 +45,20 @@ export default function QRRenderer({
       height: size
     });
 
-    const el = containerRef.current;
-    el.innerHTML = '';
-    renderQRCode(qrRef.current, el);
+    qrRef.current = qr;
+    qr.append(el);
 
+    // Notificar que el QR está listo
+    if (onReady) onReady(qr);
+
+    // Cleanup al desmontar
     return () => {
-      if (qrRef.current) qrRef.current = null;
+      if (containerRef.current) {
+        containerRef.current.innerHTML = '';
+      }
+      qrRef.current = null;
     };
-  }, [shortlink, qrColor, qrBgColor, qrStyle, qrCornersStyle, qrCornersDotStyle, qrLogoUrl, qrImageSize, qrImageMargin, qrErrorCorrection, size]);
+  }, [shortlink, qrColor, qrBgColor, qrStyle, qrCornersStyle, qrCornersDotStyle, qrLogoUrl, qrImageSize, qrImageMargin, qrErrorCorrection, size, onReady]);
 
-  return (
-    <div ref={containerRef} className="flex items-center justify-center" />
-  );
+  return <div ref={containerRef} className="flex items-center justify-center" />;
 }
-
-export { downloadQRPNG, downloadQRSVG };

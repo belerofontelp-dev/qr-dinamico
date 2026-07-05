@@ -10,6 +10,7 @@ import TypeSelector from '../components/CreateWizard/TypeSelector';
 import ContentStep from '../components/CreateWizard/ContentStep';
 import DesignStep from '../components/CreateWizard/DesignStep';
 import MobilePreview from '../components/MobilePreview/MobilePreview';
+import QRRenderer from '../components/QREditor/QRRenderer';
 import { renderPreviewForType } from '../components/CreateWizard/TypePreviews';
 import { HelpCircle, X, ArrowLeft } from 'lucide-react';
 
@@ -48,32 +49,28 @@ export default function CreateQR() {
   const [created, setCreated] = useState(null);
   const [qrRef, setQrRef] = useState(null);
   const [showHelp, setShowHelp] = useState(false);
-  const qrContainerRef = useRef(null);
   const previewUrl = `${import.meta.env.VITE_WORKER_URL}/q/preview`;
 
-  const updateQR = useCallback(() => {
-    if (!qrContainerRef.current) return;
-    const size = 200;
-    const qr = generateQRCode(previewUrl, {
-      qrColor: styleData.qr_color ?? '#000000',
-      qrBgColor: styleData.qr_bg_color ?? '#FFFFFF',
-      qrStyle: styleData.qr_style ?? 'square',
-      qrCornersStyle: styleData.qr_corners_style ?? 'square',
-      qrCornersDotStyle: styleData.qr_corners_dot_style ?? 'square',
-      qrLogoUrl: styleData.qr_logo_path,
-      qrImageSize: styleData.qr_image_size ?? 0.4,
-      qrImageMargin: styleData.qr_image_margin ?? 0,
-      qrErrorCorrection: styleData.qr_error_correction ?? 'H',
-      width: size,
-      height: size
-    });
+  const handleQrReady = useCallback((qr) => {
     setQrRef(qr);
-    const el = qrContainerRef.current;
-    el.innerHTML = '';
-    qr.append(el);
-  }, [styleData, previewUrl]);
+  }, []);
 
-  useEffect(() => { updateQR(); }, [updateQR]);
+  const qrRenderer = (
+    <QRRenderer
+      shortlink={previewUrl}
+      qrColor={styleData.qr_color ?? '#000000'}
+      qrBgColor={styleData.qr_bg_color ?? '#FFFFFF'}
+      qrStyle={styleData.qr_style ?? 'square'}
+      qrCornersStyle={styleData.qr_corners_style ?? 'square'}
+      qrCornersDotStyle={styleData.qr_corners_dot_style ?? 'square'}
+      qrLogoUrl={styleData.qr_logo_path}
+      qrImageSize={styleData.qr_image_size ?? 0.4}
+      qrImageMargin={styleData.qr_image_margin ?? 0}
+      qrErrorCorrection={styleData.qr_error_correction ?? 'H'}
+      size={200}
+      onReady={handleQrReady}
+    />
+  );
 
   const handleTypeSelect = (type) => {
     setQrType(type);
@@ -259,13 +256,10 @@ export default function CreateQR() {
                   tabs
                   qrTabEnabled={step >= 2}
                   defaultTab={step === 1 ? 0 : (qrType ? 1 : 0)}
+                  qrContent={step >= 2 ? qrRenderer : null}
                 >
                   {step >= 2 && qrType && renderPreviewForType(qrType, formData)}
                 </MobilePreview>
-                <div
-                  ref={qrContainerRef}
-                  className="mt-4 flex justify-center min-h-[200px] items-start"
-                />
               </div>
             </div>
           </div>
