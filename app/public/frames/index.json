@@ -1,46 +1,587 @@
 {
   "version": "1.0",
-  "viewBox": "0 0 320 418",
-  "defaultQrArea": { "x": 40, "y": 30, "width": 240, "height": 240 },
-  "defaultTextArea": { "x": 40, "y": 360, "width": 240, "height": 45 },
+  "viewBox": {
+    "width": 320,
+    "height": 418
+  },
+  "defaultQrArea": {
+    "x": 40,
+    "y": 30,
+    "width": 240,
+    "height": 240
+  },
+  "defaultTextArea": {
+    "x": 40,
+    "y": 360,
+    "width": 240,
+    "height": 45
+  },
   "categories": [
-    { "id": "basic", "name": "Básicos" },
-    { "id": "rounded", "name": "Redondeados" },
-    { "id": "shadow", "name": "Con sombra" },
-    { "id": "dark", "name": "Oscuros" },
-    { "id": "decorative", "name": "Decorativos" },
-    { "id": "business", "name": "Negocios" }
+    {
+      "id": "basic",
+      "name": "Básicos"
+    },
+    {
+      "id": "rounded",
+      "name": "Redondeados"
+    },
+    {
+      "id": "shadow",
+      "name": "Con sombra"
+    },
+    {
+      "id": "dark",
+      "name": "Oscuros"
+    },
+    {
+      "id": "decorative",
+      "name": "Decorativos"
+    },
+    {
+      "id": "business",
+      "name": "Negocios"
+    }
   ],
   "frames": [
-    { "id": "1", "name": "Borde clásico", "category": "basic", "file": "1.svg", "qrArea": { "x": 38, "y": 23, "width": 244, "height": 244 }, "textArea": { "x": 40, "y": 360, "width": 240, "height": 45 } },
-    { "id": "3", "name": "Borde fino", "category": "basic", "file": "3.svg", "qrArea": { "x": 38, "y": 23, "width": 244, "height": 244 }, "textArea": { "x": 40, "y": 360, "width": 240, "height": 45 } },
-    { "id": "4", "name": "Esquinas redondeadas", "category": "rounded", "file": "4.svg", "qrArea": { "x": 38, "y": 23, "width": 244, "height": 244 }, "textArea": { "x": 40, "y": 360, "width": 240, "height": 45 } },
-    { "id": "5", "name": "Sombra suave", "category": "shadow", "file": "5.svg", "qrArea": { "x": 38, "y": 23, "width": 244, "height": 244 }, "textArea": { "x": 40, "y": 360, "width": 240, "height": 45 } },
-    { "id": "6", "name": "Marco doble", "category": "basic", "file": "6.svg", "qrArea": { "x": 38, "y": 23, "width": 244, "height": 244 }, "textArea": { "x": 40, "y": 360, "width": 240, "height": 45 } },
-    { "id": "7", "name": "Marco grueso", "category": "basic", "file": "7.svg", "qrArea": { "x": 38, "y": 23, "width": 244, "height": 244 }, "textArea": { "x": 40, "y": 360, "width": 240, "height": 45 } },
-    { "id": "8", "name": "Fondo negro", "category": "dark", "file": "8.svg", "qrArea": { "x": 38, "y": 23, "width": 244, "height": 244 }, "textArea": { "x": 40, "y": 360, "width": 240, "height": 45 } },
-    { "id": "9", "name": "Caja negra", "category": "dark", "file": "9.svg", "qrArea": { "x": 38, "y": 23, "width": 244, "height": 244 }, "textArea": { "x": 40, "y": 360, "width": 240, "height": 45 } },
-    { "id": "10", "name": "Pegatina", "category": "rounded", "file": "10.svg", "qrArea": { "x": 38, "y": 23, "width": 244, "height": 244 }, "textArea": { "x": 40, "y": 360, "width": 240, "height": 45 } },
-    { "id": "11", "name": "Flecha", "category": "decorative", "file": "11.svg", "qrArea": { "x": 38, "y": 35, "width": 244, "height": 244 }, "textArea": { "x": 40, "y": 360, "width": 240, "height": 45 } },
-    { "id": "12", "name": "Etiqueta", "category": "decorative", "file": "12.svg", "qrArea": { "x": 38, "y": 23, "width": 244, "height": 244 }, "textArea": { "x": 40, "y": 360, "width": 240, "height": 45 } },
-    { "id": "13", "name": "Regalo", "category": "decorative", "file": "13.svg", "qrArea": { "x": 38, "y": 30, "width": 244, "height": 244 }, "textArea": { "x": 40, "y": 360, "width": 240, "height": 45 } },
-    { "id": "14", "name": "Cinta", "category": "decorative", "file": "14.svg", "qrArea": { "x": 38, "y": 23, "width": 244, "height": 244 }, "textArea": { "x": 40, "y": 360, "width": 240, "height": 45 } },
-    { "id": "15", "name": "Banner", "category": "decorative", "file": "15.svg", "qrArea": { "x": 38, "y": 30, "width": 244, "height": 244 }, "textArea": { "x": 40, "y": 360, "width": 240, "height": 45 } },
-    { "id": "16", "name": "Sobre", "category": "decorative", "file": "16.svg", "qrArea": { "x": 50, "y": 55, "width": 220, "height": 220 }, "textArea": { "x": 40, "y": 360, "width": 240, "height": 45 } },
-    { "id": "17", "name": "Delivery", "category": "business", "file": "17.svg", "qrArea": { "x": 38, "y": 30, "width": 244, "height": 244 }, "textArea": { "x": 40, "y": 360, "width": 240, "height": 45 } },
-    { "id": "18", "name": "Laptop", "category": "business", "file": "18.svg", "qrArea": { "x": 38, "y": 23, "width": 244, "height": 244 }, "textArea": { "x": 40, "y": 360, "width": 240, "height": 45 } },
-    { "id": "19", "name": "Café", "category": "business", "file": "19.svg", "qrArea": { "x": 38, "y": 23, "width": 244, "height": 244 }, "textArea": { "x": 40, "y": 360, "width": 240, "height": 45 } },
-    { "id": "20", "name": "Móvil", "category": "business", "file": "20.svg", "qrArea": { "x": 38, "y": 23, "width": 244, "height": 244 }, "textArea": { "x": 40, "y": 360, "width": 240, "height": 45 } },
-    { "id": "21", "name": "Redondo", "category": "rounded", "file": "21.svg", "qrArea": { "x": 38, "y": 23, "width": 244, "height": 244 }, "textArea": { "x": 40, "y": 360, "width": 240, "height": 45 } },
-    { "id": "22", "name": "Circular", "category": "rounded", "file": "22.svg", "qrArea": { "x": 38, "y": 35, "width": 244, "height": 244 }, "textArea": { "x": 40, "y": 360, "width": 240, "height": 45 } },
-    { "id": "23", "name": "Oval", "category": "rounded", "file": "23.svg", "qrArea": { "x": 38, "y": 40, "width": 244, "height": 244 }, "textArea": { "x": 40, "y": 360, "width": 240, "height": 45 } },
-    { "id": "24", "name": "Cuadrado", "category": "basic", "file": "24.svg", "qrArea": { "x": 38, "y": 23, "width": 244, "height": 244 }, "textArea": { "x": 40, "y": 360, "width": 240, "height": 45 } },
-    { "id": "25", "name": "Clip", "category": "business", "file": "25.svg", "qrArea": { "x": 50, "y": 82, "width": 220, "height": 220 }, "textArea": { "x": 40, "y": 360, "width": 240, "height": 45 } },
-    { "id": "26", "name": "Bolsa", "category": "business", "file": "26.svg", "qrArea": { "x": 38, "y": 23, "width": 244, "height": 244 }, "textArea": { "x": 40, "y": 360, "width": 240, "height": 45 } },
-    { "id": "27", "name": "Globo", "category": "decorative", "file": "27.svg", "qrArea": { "x": 38, "y": 30, "width": 244, "height": 244 }, "textArea": { "x": 40, "y": 360, "width": 240, "height": 45 } },
-    { "id": "28", "name": "Foto", "category": "basic", "file": "28.svg", "qrArea": { "x": 38, "y": 23, "width": 244, "height": 244 }, "textArea": { "x": 40, "y": 360, "width": 240, "height": 45 } },
-    { "id": "29", "name": "Pincel", "category": "decorative", "file": "29.svg", "qrArea": { "x": 38, "y": 23, "width": 244, "height": 244 }, "textArea": { "x": 40, "y": 360, "width": 240, "height": 45 } },
-    { "id": "30", "name": "Marcador", "category": "decorative", "file": "30.svg", "qrArea": { "x": 38, "y": 30, "width": 244, "height": 244 }, "textArea": { "x": 40, "y": 360, "width": 240, "height": 45 } },
-    { "id": "31", "name": "Destacado", "category": "shadow", "file": "31.svg", "qrArea": { "x": 38, "y": 23, "width": 244, "height": 244 }, "textArea": { "x": 40, "y": 360, "width": 240, "height": 45 } }
+    {
+      "id": "1",
+      "name": "Borde clásico",
+      "category": "basic",
+      "file": "1.svg",
+      "qrArea": {
+        "x": 38,
+        "y": 23,
+        "width": 243,
+        "height": 243
+      },
+      "textArea": {
+        "x": 38,
+        "y": 286,
+        "width": 243,
+        "height": 40
+      }
+    },
+    {
+      "id": "3",
+      "name": "Borde fino",
+      "category": "basic",
+      "file": "3.svg",
+      "qrArea": {
+        "x": 38,
+        "y": 23,
+        "width": 243,
+        "height": 243
+      },
+      "textArea": {
+        "x": 38,
+        "y": 286,
+        "width": 243,
+        "height": 40
+      }
+    },
+    {
+      "id": "4",
+      "name": "Esquinas redondeadas",
+      "category": "rounded",
+      "file": "4.svg",
+      "qrArea": {
+        "x": 37,
+        "y": 22,
+        "width": 243,
+        "height": 243
+      },
+      "textArea": {
+        "x": 37,
+        "y": 285,
+        "width": 243,
+        "height": 40
+      }
+    },
+    {
+      "id": "5",
+      "name": "Sombra suave",
+      "category": "shadow",
+      "file": "5.svg",
+      "qrArea": {
+        "x": 37,
+        "y": 26,
+        "width": 243,
+        "height": 243
+      },
+      "textArea": {
+        "x": 37,
+        "y": 289,
+        "width": 243,
+        "height": 40
+      }
+    },
+    {
+      "id": "6",
+      "name": "Marco doble",
+      "category": "basic",
+      "file": "6.svg",
+      "qrArea": {
+        "x": 38,
+        "y": 26,
+        "width": 243,
+        "height": 243
+      },
+      "textArea": {
+        "x": 38,
+        "y": 289,
+        "width": 243,
+        "height": 40
+      }
+    },
+    {
+      "id": "7",
+      "name": "Marco grueso",
+      "category": "basic",
+      "file": "7.svg",
+      "qrArea": {
+        "x": 38,
+        "y": 23,
+        "width": 243,
+        "height": 243
+      },
+      "textArea": {
+        "x": 38,
+        "y": 286,
+        "width": 243,
+        "height": 40
+      }
+    },
+    {
+      "id": "8",
+      "name": "Fondo negro",
+      "category": "dark",
+      "file": "8.svg",
+      "qrArea": {
+        "x": 38,
+        "y": 22,
+        "width": 243,
+        "height": 243
+      },
+      "textArea": {
+        "x": 38,
+        "y": 285,
+        "width": 243,
+        "height": 40
+      }
+    },
+    {
+      "id": "9",
+      "name": "Caja negra",
+      "category": "dark",
+      "file": "9.svg",
+      "qrArea": {
+        "x": 38,
+        "y": 28,
+        "width": 243,
+        "height": 243
+      },
+      "textArea": {
+        "x": 38,
+        "y": 291,
+        "width": 243,
+        "height": 40
+      }
+    },
+    {
+      "id": "10",
+      "name": "Pegatina",
+      "category": "rounded",
+      "file": "10.svg",
+      "qrArea": {
+        "x": 38,
+        "y": 21,
+        "width": 243,
+        "height": 243
+      },
+      "textArea": {
+        "x": 38,
+        "y": 284,
+        "width": 243,
+        "height": 40
+      }
+    },
+    {
+      "id": "11",
+      "name": "Flecha",
+      "category": "decorative",
+      "file": "11.svg",
+      "qrArea": {
+        "x": 38,
+        "y": 123,
+        "width": 243,
+        "height": 243
+      },
+      "textArea": {
+        "x": 38,
+        "y": 380,
+        "width": 243,
+        "height": 40
+      }
+    },
+    {
+      "id": "12",
+      "name": "Etiqueta",
+      "category": "decorative",
+      "file": "12.svg",
+      "qrArea": {
+        "x": 71,
+        "y": 78,
+        "width": 177,
+        "height": 177
+      },
+      "textArea": {
+        "x": 71,
+        "y": 275,
+        "width": 177,
+        "height": 40
+      }
+    },
+    {
+      "id": "13",
+      "name": "Regalo",
+      "category": "decorative",
+      "file": "13.svg",
+      "qrArea": {
+        "x": 38,
+        "y": 25,
+        "width": 243,
+        "height": 283
+      },
+      "textArea": {
+        "x": 38,
+        "y": 328,
+        "width": 243,
+        "height": 40
+      }
+    },
+    {
+      "id": "14",
+      "name": "Cinta",
+      "category": "decorative",
+      "file": "14.svg",
+      "qrArea": {
+        "x": 38,
+        "y": 23,
+        "width": 243,
+        "height": 243
+      },
+      "textArea": {
+        "x": 38,
+        "y": 286,
+        "width": 243,
+        "height": 40
+      }
+    },
+    {
+      "id": "15",
+      "name": "Banner",
+      "category": "decorative",
+      "file": "15.svg",
+      "qrArea": {
+        "x": 63,
+        "y": 77,
+        "width": 192,
+        "height": 192
+      },
+      "textArea": {
+        "x": 63,
+        "y": 289,
+        "width": 192,
+        "height": 40
+      }
+    },
+    {
+      "id": "16",
+      "name": "Sobre",
+      "category": "decorative",
+      "file": "16.svg",
+      "qrArea": {
+        "x": 55,
+        "y": 18,
+        "width": 209,
+        "height": 240
+      },
+      "textArea": {
+        "x": 55,
+        "y": 278,
+        "width": 209,
+        "height": 40
+      }
+    },
+    {
+      "id": "17",
+      "name": "Delivery",
+      "category": "business",
+      "file": "17.svg",
+      "qrArea": {
+        "x": 82,
+        "y": 123,
+        "width": 155,
+        "height": 155
+      },
+      "textArea": {
+        "x": 82,
+        "y": 298,
+        "width": 155,
+        "height": 40
+      }
+    },
+    {
+      "id": "18",
+      "name": "Laptop",
+      "category": "business",
+      "file": "18.svg",
+      "qrArea": {
+        "x": 58,
+        "y": 94,
+        "width": 202,
+        "height": 202
+      },
+      "textArea": {
+        "x": 58,
+        "y": 316,
+        "width": 202,
+        "height": 40
+      }
+    },
+    {
+      "id": "19",
+      "name": "Café",
+      "category": "business",
+      "file": "19.svg",
+      "qrArea": {
+        "x": 60,
+        "y": 119,
+        "width": 198,
+        "height": 198
+      },
+      "textArea": {
+        "x": 60,
+        "y": 337,
+        "width": 198,
+        "height": 40
+      }
+    },
+    {
+      "id": "20",
+      "name": "Móvil",
+      "category": "business",
+      "file": "20.svg",
+      "qrArea": {
+        "x": 81,
+        "y": 95,
+        "width": 157,
+        "height": 157
+      },
+      "textArea": {
+        "x": 81,
+        "y": 272,
+        "width": 157,
+        "height": 40
+      }
+    },
+    {
+      "id": "21",
+      "name": "Redondo",
+      "category": "rounded",
+      "file": "21.svg",
+      "qrArea": {
+        "x": 76,
+        "y": 38,
+        "width": 167,
+        "height": 167
+      },
+      "textArea": {
+        "x": 76,
+        "y": 225,
+        "width": 167,
+        "height": 40
+      }
+    },
+    {
+      "id": "22",
+      "name": "Circular",
+      "category": "rounded",
+      "file": "22.svg",
+      "qrArea": {
+        "x": 31,
+        "y": 75,
+        "width": 115,
+        "height": 115
+      },
+      "textArea": {
+        "x": 31,
+        "y": 210,
+        "width": 115,
+        "height": 40
+      }
+    },
+    {
+      "id": "23",
+      "name": "Oval",
+      "category": "rounded",
+      "file": "23.svg",
+      "qrArea": {
+        "x": 84,
+        "y": 75,
+        "width": 157,
+        "height": 157
+      },
+      "textArea": {
+        "x": 84,
+        "y": 252,
+        "width": 157,
+        "height": 40
+      }
+    },
+    {
+      "id": "24",
+      "name": "Cuadrado",
+      "category": "basic",
+      "file": "24.svg",
+      "qrArea": {
+        "x": 122,
+        "y": 125,
+        "width": 155,
+        "height": 289
+      },
+      "textArea": {
+        "x": 122,
+        "y": 380,
+        "width": 155,
+        "height": 40
+      }
+    },
+    {
+      "id": "25",
+      "name": "Clip",
+      "category": "business",
+      "file": "25.svg",
+      "qrArea": {
+        "x": 49,
+        "y": 82,
+        "width": 220,
+        "height": 220
+      },
+      "textArea": {
+        "x": 49,
+        "y": 322,
+        "width": 220,
+        "height": 40
+      }
+    },
+    {
+      "id": "26",
+      "name": "Bolsa",
+      "category": "business",
+      "file": "26.svg",
+      "qrArea": {
+        "x": 73,
+        "y": 81,
+        "width": 274,
+        "height": 201
+      },
+      "textArea": {
+        "x": 73,
+        "y": 302,
+        "width": 274,
+        "height": 40
+      }
+    },
+    {
+      "id": "27",
+      "name": "Globo",
+      "category": "decorative",
+      "file": "27.svg",
+      "qrArea": {
+        "x": 68,
+        "y": 143,
+        "width": 183,
+        "height": 183
+      },
+      "textArea": {
+        "x": 68,
+        "y": 346,
+        "width": 183,
+        "height": 40
+      }
+    },
+    {
+      "id": "28",
+      "name": "Foto",
+      "category": "basic",
+      "file": "28.svg",
+      "qrArea": {
+        "x": 81,
+        "y": 106,
+        "width": 157,
+        "height": 157
+      },
+      "textArea": {
+        "x": 81,
+        "y": 283,
+        "width": 157,
+        "height": 40
+      }
+    },
+    {
+      "id": "29",
+      "name": "Pincel",
+      "category": "decorative",
+      "file": "29.svg",
+      "qrArea": {
+        "x": 83,
+        "y": 171,
+        "width": 236,
+        "height": 153
+      },
+      "textArea": {
+        "x": 83,
+        "y": 344,
+        "width": 236,
+        "height": 40
+      }
+    },
+    {
+      "id": "30",
+      "name": "Marcador",
+      "category": "decorative",
+      "file": "30.svg",
+      "qrArea": {
+        "x": 69,
+        "y": 115,
+        "width": 226,
+        "height": 282
+      },
+      "textArea": {
+        "x": 69,
+        "y": 380,
+        "width": 226,
+        "height": 40
+      }
+    },
+    {
+      "id": "31",
+      "name": "Destacado",
+      "category": "shadow",
+      "file": "31.svg",
+      "qrArea": {
+        "x": 77,
+        "y": 130,
+        "width": 152,
+        "height": 292
+      },
+      "textArea": {
+        "x": 77,
+        "y": 380,
+        "width": 152,
+        "height": 40
+      }
+    }
   ]
 }

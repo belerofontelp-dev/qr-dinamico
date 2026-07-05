@@ -79,10 +79,15 @@ export default function QRPreview({
     const frameWidth = FRAME_VIEWBOX.width * scale;
     const frameHeight = FRAME_VIEWBOX.height * scale;
     const qrArea = frameData.qrArea || { x: 40, y: 30, width: 240, height: 240 };
-    const qrSize = Math.round(qrArea.width * scale);
-    const qrX = Math.round(qrArea.x * scale);
-    const qrY = Math.round(qrArea.y * scale);
     const textArea = frameData.textArea || { x: 40, y: 360, width: 240, height: 45 };
+
+    // Center QR as a square inside the frame's QR area
+    const qrOriginalSize = Math.min(qrArea.width, qrArea.height);
+    const qrOriginalX = qrArea.x + (qrArea.width - qrOriginalSize) / 2;
+    const qrOriginalY = qrArea.y + (qrArea.height - qrOriginalSize) / 2;
+    const qrSize = Math.round(qrOriginalSize * scale);
+    const qrX = Math.round(qrOriginalX * scale);
+    const qrY = Math.round(qrOriginalY * scale);
 
     containerRef.current.innerHTML = '';
     containerRef.current.style.width = `${frameWidth}px`;
@@ -100,13 +105,13 @@ export default function QRPreview({
     img.alt = frameData.name;
     containerRef.current.appendChild(img);
 
-    // White patch to hide dummy QR
+    // White patch to hide dummy QR (covers the frame's entire QR area)
     const patch = document.createElement('div');
     patch.style.position = 'absolute';
-    patch.style.left = `${qrX}px`;
-    patch.style.top = `${qrY}px`;
-    patch.style.width = `${qrSize}px`;
-    patch.style.height = `${qrSize}px`;
+    patch.style.left = `${Math.round(qrArea.x * scale)}px`;
+    patch.style.top = `${Math.round(qrArea.y * scale)}px`;
+    patch.style.width = `${Math.round(qrArea.width * scale)}px`;
+    patch.style.height = `${Math.round(qrArea.height * scale)}px`;
     patch.style.backgroundColor = qrBgColor || '#FFFFFF';
     containerRef.current.appendChild(patch);
 
