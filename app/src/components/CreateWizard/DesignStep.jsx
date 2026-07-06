@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../lib/supabase';
-import { QR_PATTERNS, CORNER_STYLES, INNER_CORNER_STYLES } from '../../lib/qr-generator';
+import { QR_PATTERNS, CORNER_STYLES, INNER_CORNER_STYLES, GRADIENT_STYLES } from '../../lib/qr-generator';
 import { loadFramesIndex } from '../../lib/qr-frames';
 import AccordionCard from '../ui/AccordionCard';
+import ExpiryConfig from '../ExpiryConfig/ExpiryConfig';
 import { cn } from '../../lib/cn';
-import { Upload, Trash2 } from 'lucide-react';
+import { Upload, Trash2, Clock } from 'lucide-react';
 
 function PatternThumbnail({ type, selected, onClick }) {
   const renderDots = () => {
@@ -141,28 +142,39 @@ function ColorInput({ value, onChange, label }) {
   );
 }
 
-function ToggleSwitch({ label, value, onChange, note }) {
+function GradientSelector({ label, value, onChange, color1, onChangeColor1, color2, onChangeColor2 }) {
   return (
     <div>
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-[#6e6e6e]">{label}</span>
-        <button
-          type="button"
-          onClick={() => onChange(!value)}
-          className={cn(
-            'relative w-9 h-5 rounded-full transition-colors duration-200',
-            value ? 'bg-[#8364ff]' : 'bg-[#d5d5d5]'
-          )}
-        >
-          <span
+      <span className="text-xs font-semibold text-[#6e6e6e] mb-2 block">{label}</span>
+      <div className="flex flex-wrap gap-1.5 mb-2">
+        {GRADIENT_STYLES.map((g) => (
+          <button
+            key={g.value}
+            type="button"
+            onClick={() => onChange(g.value)}
             className={cn(
-              'absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200',
-              value ? 'translate-x-[18px]' : 'translate-x-[1px]'
+              'px-2.5 py-1.5 rounded-lg border text-[10px] font-semibold transition-all',
+              value === g.value
+                ? 'border-[#8364ff] bg-[#f3f0ff] text-[#8364ff]'
+                : 'border-[#eeeeee] text-[#6e6e6e] hover:border-[#d5d5d5]'
             )}
-          />
-        </button>
+          >
+            {g.label}
+          </button>
+        ))}
       </div>
-      {note && <p className="text-[10px] text-[#a0a0a0] mt-2">{note}</p>}
+      {value !== 'none' && (
+        <div className="flex gap-3 mt-2">
+          <div className="flex-1">
+            <span className="text-[10px] text-[#a0a0a0] block mb-1">Color 1</span>
+            <ColorInput value={color1} onChange={onChangeColor1} />
+          </div>
+          <div className="flex-1">
+            <span className="text-[10px] text-[#a0a0a0] block mb-1">Color 2</span>
+            <ColorInput value={color2} onChange={onChangeColor2} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -181,11 +193,21 @@ export default function DesignStep({ styleData, onChange }) {
   const [imageMargin, setImageMargin] = useState(styleData.qr_image_margin ?? 0);
   const [errorCorrection, setErrorCorrection] = useState(styleData.qr_error_correction ?? 'H');
   const [frames, setFrames] = useState([]);
-  const [gradientPattern, setGradientPattern] = useState(false);
-  const [transparentBg, setTransparentBg] = useState(false);
-  const [gradientBg, setGradientBg] = useState(false);
+  const [gradientStyle, setGradientStyle] = useState(styleData.qr_gradient_style ?? 'none');
+  const [gradientColor1, setGradientColor1] = useState(styleData.qr_gradient_color1 ?? '#8364ff');
+  const [gradientColor2, setGradientColor2] = useState(styleData.qr_gradient_color2 ?? '#c4b0ff');
+  const [bgGradientStyle, setBgGradientStyle] = useState(styleData.qr_bg_gradient_style ?? 'none');
+  const [bgGradientColor1, setBgGradientColor1] = useState(styleData.qr_bg_gradient_color1 ?? bgColor);
+  const [bgGradientColor2, setBgGradientColor2] = useState(styleData.qr_bg_gradient_color2 ?? '#f8f9fc');
+  const [cornersGradientStyle, setCornersGradientStyle] = useState(styleData.qr_corners_gradient_style ?? 'none');
+  const [cornersGradientColor1, setCornersGradientColor1] = useState(styleData.qr_corners_gradient_color1 ?? color);
+  const [cornersGradientColor2, setCornersGradientColor2] = useState(styleData.qr_corners_gradient_color2 ?? '#c4b0ff');
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
+  const [expiryData, setExpiryData] = useState({
+    expires_at: styleData.expires_at ?? null,
+    max_scans: styleData.max_scans ?? null
+  });
 
   useEffect(() => {
     loadFramesIndex().then((result) => {
@@ -207,8 +229,19 @@ export default function DesignStep({ styleData, onChange }) {
       qr_image_size: imageSize,
       qr_image_margin: imageMargin,
       qr_error_correction: errorCorrection,
+      qr_gradient_style: gradientStyle,
+      qr_gradient_color1: gradientColor1,
+      qr_gradient_color2: gradientColor2,
+      qr_bg_gradient_style: bgGradientStyle,
+      qr_bg_gradient_color1: bgGradientColor1,
+      qr_bg_gradient_color2: bgGradientColor2,
+      qr_corners_gradient_style: cornersGradientStyle,
+      qr_corners_gradient_color1: cornersGradientColor1,
+      qr_corners_gradient_color2: cornersGradientColor2,
+      expires_at: expiryData.expires_at,
+      max_scans: expiryData.max_scans,
     });
-  }, [color, bgColor, pattern, cornersStyle, cornersDotStyle, frameStyle, frameText, frameTextColor, logoUrl, imageSize, imageMargin, errorCorrection]);
+  }, [color, bgColor, pattern, cornersStyle, cornersDotStyle, frameStyle, frameText, frameTextColor, logoUrl, imageSize, imageMargin, errorCorrection, gradientStyle, gradientColor1, gradientColor2, bgGradientStyle, bgGradientColor1, bgGradientColor2, cornersGradientStyle, cornersGradientColor1, cornersGradientColor2, expiryData]);
 
   const handleLogoUpload = useCallback(async (e) => {
     const file = e.target.files?.[0];
@@ -343,35 +376,34 @@ export default function DesignStep({ styleData, onChange }) {
           </div>
           <div>
             <span className="text-xs font-semibold text-[#6e6e6e] mb-2 block">Color del patrón</span>
-            <ToggleSwitch
-              label="Usar gradiente de color"
-              value={gradientPattern}
-              onChange={setGradientPattern}
-            />
-            <div className="mt-2">
+            <div className="mt-2 mb-3">
               <ColorInput value={color} onChange={setColor} />
             </div>
+            <GradientSelector
+              label="Estilo de gradiente del patrón"
+              value={gradientStyle}
+              onChange={setGradientStyle}
+              color1={gradientColor1}
+              onChangeColor1={setGradientColor1}
+              color2={gradientColor2}
+              onChangeColor2={setGradientColor2}
+            />
           </div>
           <div>
             <span className="text-xs font-semibold text-[#6e6e6e] mb-2 block">Color de fondo</span>
-            <ToggleSwitch
-              label="Fondo transparente"
-              value={transparentBg}
-              onChange={setTransparentBg}
-              note="Recordá: para una lectura óptima del código QR, recomendamos usar colores de alto contraste."
+            <p className="text-[10px] text-[#a0a0a0] mb-2">Para una lectura óptima del código QR, recomendamos usar colores de alto contraste.</p>
+            <div className="mt-2 mb-3">
+              <ColorInput value={bgColor} onChange={setBgColor} />
+            </div>
+            <GradientSelector
+              label="Estilo de gradiente del fondo"
+              value={bgGradientStyle}
+              onChange={setBgGradientStyle}
+              color1={bgGradientColor1}
+              onChangeColor1={setBgGradientColor1}
+              color2={bgGradientColor2}
+              onChangeColor2={setBgGradientColor2}
             />
-            {!transparentBg && (
-              <>
-                <ToggleSwitch
-                  label="Usar gradiente de color de fondo"
-                  value={gradientBg}
-                  onChange={setGradientBg}
-                />
-                <div className="mt-2">
-                  <ColorInput value={bgColor} onChange={setBgColor} />
-                </div>
-              </>
-            )}
           </div>
         </div>
       </AccordionCard>
@@ -417,7 +449,18 @@ export default function DesignStep({ styleData, onChange }) {
           </div>
           <div>
             <span className="text-xs font-semibold text-[#6e6e6e] mb-2 block">Color de esquinas</span>
-            <ColorInput value={color} onChange={setColor} label="" />
+            <div className="mt-2 mb-3">
+              <ColorInput value={color} onChange={setColor} label="" />
+            </div>
+            <GradientSelector
+              label="Estilo de gradiente de esquinas"
+              value={cornersGradientStyle}
+              onChange={setCornersGradientStyle}
+              color1={cornersGradientColor1}
+              onChangeColor1={setCornersGradientColor1}
+              color2={cornersGradientColor2}
+              onChangeColor2={setCornersGradientColor2}
+            />
           </div>
         </div>
       </AccordionCard>
@@ -520,6 +563,17 @@ export default function DesignStep({ styleData, onChange }) {
             </div>
           )}
         </div>
+      </AccordionCard>
+
+      <AccordionCard
+        icon={Clock}
+        title="Caducidad"
+        subtitle="Configurá cuándo expira tu código QR. Podés definir una fecha, un límite de escaneos o ambos."
+      >
+        <ExpiryConfig
+          initial={expiryData}
+          onChange={setExpiryData}
+        />
       </AccordionCard>
     </div>
   );

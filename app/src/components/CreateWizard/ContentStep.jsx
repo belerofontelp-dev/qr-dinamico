@@ -427,17 +427,57 @@ export default function ContentStep({ type, formData, onFormChange, name, onName
                 />
               </div>
             ))}
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  const links = [...(formData.links || [{ title: '', url: '' }]), { title: '', url: '' }];
+                  updateField('links', links);
+                }}
+                className="h-10 px-3 rounded-lg border border-[#8364ff] bg-[#f3f0ff] text-xs font-semibold text-[#8364ff] hover:bg-[#ebe4ff] transition-colors shrink-0"
+              >
+                + Agregar link
+              </button>
+              {(formData.links || []).length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const links = [...(formData.links || [{ title: '', url: '' }])];
+                    links.pop();
+                    updateField('links', links.length ? links : [{ title: '', url: '' }]);
+                  }}
+                  className="h-10 px-3 rounded-lg border border-[#e0e0e0] text-xs font-semibold text-[#6e6e6e] hover:text-red-400 transition-colors shrink-0"
+                >
+                  Eliminar último
+                </button>
+              )}
+            </div>
           </>
         );
       case 'facebook':
         return (
-          <TextInput
-            label="URL de Facebook"
-            value={formData.url || ''}
-            onChange={(v) => updateField('url', v)}
-            placeholder="https://facebook.com/tupagina"
-            required
-          />
+          <>
+            <TextInput
+              label="URL de Facebook"
+              value={formData.url || ''}
+              onChange={(v) => updateField('url', v)}
+              placeholder="https://facebook.com/tupagina"
+              required
+            />
+            <TextInput
+              label="Título"
+              value={formData.title || ''}
+              onChange={(v) => updateField('title', v)}
+              placeholder="Fashion Inspiration"
+            />
+            <TextInput
+              label="Descripción"
+              value={formData.description || ''}
+              onChange={(v) => updateField('description', v)}
+              placeholder="Descripción de tu página"
+              multiline
+            />
+          </>
         );
       case 'instagram':
         return (

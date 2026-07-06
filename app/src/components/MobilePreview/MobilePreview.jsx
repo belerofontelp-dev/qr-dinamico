@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { cn } from '../../lib/cn';
 
-export default function MobilePreview({ children, qrContent, tabs = true, qrTabEnabled = false, defaultTab = 0 }) {
-  const [tab, setTab] = useState(defaultTab);
+export default function MobilePreview({ children, qrContent, tabs = true, qrTabEnabled = false, activeTab = 0, onTabChange }) {
+  const [internalTab, setInternalTab] = useState(activeTab);
+  const tab = onTabChange ? activeTab : internalTab;
+  const setTab = onTabChange || setInternalTab;
 
   return (
     <div className="flex flex-col items-center">

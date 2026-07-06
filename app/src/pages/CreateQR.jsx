@@ -10,7 +10,7 @@ import TypeSelector from '../components/CreateWizard/TypeSelector';
 import ContentStep from '../components/CreateWizard/ContentStep';
 import DesignStep from '../components/CreateWizard/DesignStep';
 import MobilePreview from '../components/MobilePreview/MobilePreview';
-import QRRenderer from '../components/QREditor/QRRenderer';
+import QRPreview from '../components/QREditor/QRPreview';
 import { renderPreviewForType } from '../components/CreateWizard/TypePreviews';
 import { HelpCircle, X, ArrowLeft } from 'lucide-react';
 
@@ -42,21 +42,41 @@ export default function CreateQR() {
     qr_image_size: 0.4,
     qr_image_margin: 0,
     qr_error_correction: 'H',
-    qr_logo_path: null
+    qr_logo_path: null,
+    qr_gradient_style: 'none',
+    qr_gradient_color1: '#8364ff',
+    qr_gradient_color2: '#c4b0ff',
+    qr_bg_gradient_style: 'none',
+    qr_bg_gradient_color1: '#FFFFFF',
+    qr_bg_gradient_color2: '#f8f9fc',
+    qr_corners_gradient_style: 'none',
+    qr_corners_gradient_color1: '#000000',
+    qr_corners_gradient_color2: '#c4b0ff',
+    expires_at: null,
+    max_scans: null
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [created, setCreated] = useState(null);
   const [qrRef, setQrRef] = useState(null);
   const [showHelp, setShowHelp] = useState(false);
+  const [previewTab, setPreviewTab] = useState(0);
   const previewUrl = `${import.meta.env.VITE_WORKER_URL}/q/preview`;
+
+  useEffect(() => {
+    if (step >= 2 && qrType) {
+      setPreviewTab(1);
+    } else if (step === 1) {
+      setPreviewTab(0);
+    }
+  }, [step, qrType]);
 
   const handleQrReady = useCallback((qr) => {
     setQrRef(qr);
   }, []);
 
   const qrRenderer = (
-    <QRRenderer
+    <QRPreview
       shortlink={previewUrl}
       qrColor={styleData.qr_color ?? '#000000'}
       qrBgColor={styleData.qr_bg_color ?? '#FFFFFF'}
@@ -67,7 +87,20 @@ export default function CreateQR() {
       qrImageSize={styleData.qr_image_size ?? 0.4}
       qrImageMargin={styleData.qr_image_margin ?? 0}
       qrErrorCorrection={styleData.qr_error_correction ?? 'H'}
+      qrFrameStyle={styleData.qr_frame_style ?? 'none'}
+      qrFrameText={styleData.qr_frame_text ?? 'Escanear'}
+      qrFrameTextColor={styleData.qr_frame_text_color ?? '#000000'}
+      qrGradientStyle={styleData.qr_gradient_style ?? 'none'}
+      qrGradientColor1={styleData.qr_gradient_color1}
+      qrGradientColor2={styleData.qr_gradient_color2}
+      qrBgGradientStyle={styleData.qr_bg_gradient_style ?? 'none'}
+      qrBgGradientColor1={styleData.qr_bg_gradient_color1}
+      qrBgGradientColor2={styleData.qr_bg_gradient_color2}
+      qrCornersGradientStyle={styleData.qr_corners_gradient_style ?? 'none'}
+      qrCornersGradientColor1={styleData.qr_corners_gradient_color1}
+      qrCornersGradientColor2={styleData.qr_corners_gradient_color2}
       size={200}
+      showActions={false}
       onReady={handleQrReady}
     />
   );
@@ -102,7 +135,14 @@ export default function CreateQR() {
 
     const { expires_at, max_scans, ...cleanStyle } = styleData;
     try {
-      const payload = { platform: qrType, name, ...formData, ...cleanStyle };
+      const payload = {
+        platform: qrType,
+        name,
+        expires_at: expires_at || null,
+        max_scans: max_scans || null,
+        ...formData,
+        ...cleanStyle
+      };
       const qr = await createQR(payload);
       setCreated(qr);
       setStep(4);
@@ -120,11 +160,13 @@ export default function CreateQR() {
     setFormData({});
     setCreated(null);
     setError('');
+    setPreviewTab(0);
   };
 
   const handleTypeChange = () => {
     setStep(1);
     setQrType('');
+    setPreviewTab(0);
   };
 
   return (
@@ -255,7 +297,8 @@ export default function CreateQR() {
                 <MobilePreview
                   tabs
                   qrTabEnabled={step >= 2}
-                  defaultTab={step === 1 ? 0 : (qrType ? 1 : 0)}
+                  activeTab={previewTab}
+                  onTabChange={setPreviewTab}
                   qrContent={step >= 2 ? qrRenderer : null}
                 >
                   {step >= 2 && qrType && renderPreviewForType(qrType, formData)}

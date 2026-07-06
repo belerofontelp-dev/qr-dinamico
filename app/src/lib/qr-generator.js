@@ -33,6 +33,45 @@ export const INNER_CORNER_STYLES = [
   { value: 'dot', label: 'Punto' }
 ];
 
+export const GRADIENT_STYLES = [
+  { value: 'none', label: 'Sólido' },
+  { value: 'linear', label: 'Lineal' },
+  { value: 'radial', label: 'Radial' },
+  { value: 'vertical', label: 'Vertical' },
+  { value: 'horizontal', label: 'Horizontal' },
+  { value: 'diagonal', label: 'Diagonal' },
+  { value: 'inverse_diagonal', label: 'Diagonal invertida' }
+];
+
+const GRADIENT_ROTATIONS = {
+  linear: 0,
+  vertical: Math.PI / 2,
+  horizontal: Math.PI,
+  diagonal: Math.PI / 4,
+  inverse_diagonal: 3 * Math.PI / 4
+};
+
+function buildGradient(style, color1, color2) {
+  if (!style || style === 'none' || !color1 || !color2) return undefined;
+  if (style === 'radial') {
+    return {
+      type: 'radial',
+      colorStops: [
+        { offset: 0, color: color1 },
+        { offset: 1, color: color2 }
+      ]
+    };
+  }
+  return {
+    type: 'linear',
+    rotation: GRADIENT_ROTATIONS[style] ?? 0,
+    colorStops: [
+      { offset: 0, color: color1 },
+      { offset: 1, color: color2 }
+    ]
+  };
+}
+
 export function generateQRCode(data, options = {}) {
   const color = options.qrColor ?? DEFAULT_OPTIONS.dotsOptions.color;
   const bgColor = options.qrBgColor ?? DEFAULT_OPTIONS.backgroundOptions.color;
@@ -44,15 +83,31 @@ export function generateQRCode(data, options = {}) {
   const imageMargin = options.qrImageMargin ?? DEFAULT_OPTIONS.imageOptions.margin;
   const errorCorrection = options.qrErrorCorrection ?? DEFAULT_OPTIONS.qrOptions.errorCorrectionLevel;
 
+  const dotsGradient = buildGradient(options.qrGradientStyle, options.qrGradientColor1 || color, options.qrGradientColor2);
+  const bgGradient = buildGradient(options.qrBgGradientStyle, options.qrBgGradientColor1 || bgColor, options.qrBgGradientColor2);
+  const cornersGradient = buildGradient(options.qrCornersGradientStyle, options.qrCornersGradientColor1 || color, options.qrCornersGradientColor2);
+
+  const dotsOptions = { color, type: pattern };
+  if (dotsGradient) dotsOptions.gradient = dotsGradient;
+
+  const cornersSquareOptions = { color, type: corners };
+  if (cornersGradient) cornersSquareOptions.gradient = cornersGradient;
+
+  const cornersDotOptions = { color, type: innerCorners };
+  if (cornersGradient) cornersDotOptions.gradient = cornersGradient;
+
+  const backgroundOptions = { color: bgColor };
+  if (bgGradient) backgroundOptions.gradient = bgGradient;
+
   return new QRCodeStyling({
     ...DEFAULT_OPTIONS,
     width: options.width ?? DEFAULT_OPTIONS.width,
     height: options.height ?? DEFAULT_OPTIONS.height,
     data,
-    dotsOptions: { color, type: pattern },
-    cornersSquareOptions: { color, type: corners },
-    cornersDotOptions: { color, type: innerCorners },
-    backgroundOptions: { color: bgColor },
+    dotsOptions,
+    cornersSquareOptions,
+    cornersDotOptions,
+    backgroundOptions,
     imageOptions: {
       ...DEFAULT_OPTIONS.imageOptions,
       imageSize,

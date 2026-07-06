@@ -19,8 +19,18 @@ export default function QRPreview({
   qrFrameStyle,
   qrFrameText,
   qrFrameTextColor,
+  qrGradientStyle,
+  qrGradientColor1,
+  qrGradientColor2,
+  qrBgGradientStyle,
+  qrBgGradientColor1,
+  qrBgGradientColor2,
+  qrCornersGradientStyle,
+  qrCornersGradientColor1,
+  qrCornersGradientColor2,
   size = 220,
-  showActions = true
+  showActions = true,
+  onReady
 }) {
   const containerRef = useRef(null);
   const qrContainerRef = useRef(null);
@@ -62,6 +72,15 @@ export default function QRPreview({
         qrImageSize,
         qrImageMargin,
         qrErrorCorrection,
+        qrGradientStyle,
+        qrGradientColor1,
+        qrGradientColor2,
+        qrBgGradientStyle,
+        qrBgGradientColor1,
+        qrBgGradientColor2,
+        qrCornersGradientStyle,
+        qrCornersGradientColor1,
+        qrCornersGradientColor2,
         width: size,
         height: size
       });
@@ -71,6 +90,7 @@ export default function QRPreview({
       el.style.height = '';
       el.style.position = '';
       renderQRCode(qrRef.current, el);
+      if (onReady) onReady(qrRef.current);
       return;
     }
 
@@ -134,6 +154,15 @@ export default function QRPreview({
       qrImageSize,
       qrImageMargin,
       qrErrorCorrection,
+      qrGradientStyle,
+      qrGradientColor1,
+      qrGradientColor2,
+      qrBgGradientStyle,
+      qrBgGradientColor1,
+      qrBgGradientColor2,
+      qrCornersGradientStyle,
+      qrCornersGradientColor1,
+      qrCornersGradientColor2,
       width: qrSize,
       height: qrSize
     });
@@ -159,10 +188,15 @@ export default function QRPreview({
     textEl.style.whiteSpace = 'nowrap';
     textEl.style.pointerEvents = 'none';
     containerRef.current.appendChild(textEl);
+    if (onReady) onReady(qrRef.current);
   }, [
     shortlink, qrColor, qrBgColor, qrStyle, qrCornersStyle, qrCornersDotStyle,
     qrLogoUrl, qrImageSize, qrImageMargin, qrErrorCorrection,
-    qrFrameStyle, qrFrameText, qrFrameTextColor, frameData, size
+    qrFrameStyle, qrFrameText, qrFrameTextColor, frameData, size,
+    qrGradientStyle, qrGradientColor1, qrGradientColor2,
+    qrBgGradientStyle, qrBgGradientColor1, qrBgGradientColor2,
+    qrCornersGradientStyle, qrCornersGradientColor1, qrCornersGradientColor2,
+    onReady
   ]);
 
   const handleCopy = async () => {

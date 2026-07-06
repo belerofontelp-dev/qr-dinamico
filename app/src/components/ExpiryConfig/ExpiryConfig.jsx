@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { toISOLocal, formatDateTimeLocal } from '../../lib/date';
+import { cn } from '../../lib/cn';
 
 const OPCIONES = [
   { value: 'none', label: 'Sin caducidad' },
   { value: 'date', label: 'Por fecha' },
-  { value: 'scans', label: 'Por cantidad de escaneos' },
-  { value: 'both', label: 'Combinado (fecha y escaneos)' }
+  { value: 'scans', label: 'Por escaneos' },
+  { value: 'both', label: 'Combinado' }
 ];
 
 function detectTipo(initial) {
@@ -43,55 +44,52 @@ export default function ExpiryConfig({ onChange, initial }) {
 
   return (
     <div className="space-y-4">
-      <span className="text-sm font-medium">Caducidad</span>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-2">
         {OPCIONES.map(op => (
-          <label
+          <button
             key={op.value}
-            className={`flex items-center gap-2 cursor-pointer p-3 rounded-lg border transition ${
+            type="button"
+            onClick={() => setTipo(op.value)}
+            className={cn(
+              'py-2.5 rounded-lg border-2 text-xs font-semibold transition-all',
               tipo === op.value
-                ? 'border-black bg-gray-50'
-                : 'border-gray-200 hover:border-gray-300'
-            }`}
+                ? 'border-[#8364ff] bg-[#f3f0ff] text-[#8364ff]'
+                : 'border-[#eeeeee] text-[#6e6e6e] hover:border-[#d5d5d5]'
+            )}
           >
-            <input
-              type="radio"
-              name="expiry"
-              value={op.value}
-              checked={tipo === op.value}
-              onChange={e => setTipo(e.target.value)}
-              className="text-black focus:ring-black"
-            />
-            <span className="text-sm text-gray-700">{op.label}</span>
-          </label>
+            {op.label}
+          </button>
         ))}
       </div>
 
       {(tipo === 'date' || tipo === 'both') && (
-        <label className="block">
-          <span className="text-xs text-gray-500">Fecha y hora de expiración</span>
+        <div className="space-y-1.5">
+          <label className="block text-xs font-semibold text-[#6e6e6e]">
+            Fecha y hora de expiración
+          </label>
           <input
             type="datetime-local"
             value={fecha}
             onChange={e => setFecha(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
+            className="w-full min-h-[2.5rem] rounded-lg border border-[#e0e0e0] bg-white px-3.5 py-2.5 text-sm text-[#131d29] focus:outline-none focus:border-[#8364ff] focus:ring-2 focus:ring-[#8364ff]/15 transition-colors"
           />
-        </label>
+        </div>
       )}
 
       {(tipo === 'scans' || tipo === 'both') && (
-        <label className="block">
-          <span className="text-xs text-gray-500">Cantidad máxima de escaneos</span>
+        <div className="space-y-1.5">
+          <label className="block text-xs font-semibold text-[#6e6e6e]">
+            Cantidad máxima de escaneos
+          </label>
           <input
             type="number"
             min="1"
             value={escaneos}
             onChange={e => setEscaneos(e.target.value)}
             placeholder="100"
-            className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
+            className="w-full min-h-[2.5rem] rounded-lg border border-[#e0e0e0] bg-white px-3.5 py-2.5 text-sm text-[#131d29] placeholder:text-[#a0a0a0] focus:outline-none focus:border-[#8364ff] focus:ring-2 focus:ring-[#8364ff]/15 transition-colors"
           />
-        </label>
+        </div>
       )}
     </div>
   );

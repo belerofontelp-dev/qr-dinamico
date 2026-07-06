@@ -12,6 +12,15 @@ export default function QRRenderer({
   qrImageSize = 0.4,
   qrImageMargin = 0,
   qrErrorCorrection = 'H',
+  qrGradientStyle,
+  qrGradientColor1,
+  qrGradientColor2,
+  qrBgGradientStyle,
+  qrBgGradientColor1,
+  qrBgGradientColor2,
+  qrCornersGradientStyle,
+  qrCornersGradientColor1,
+  qrCornersGradientColor2,
   size = 200,
   onReady
 }) {
@@ -41,6 +50,15 @@ export default function QRRenderer({
       qrImageSize,
       qrImageMargin,
       qrErrorCorrection,
+      qrGradientStyle,
+      qrGradientColor1,
+      qrGradientColor2,
+      qrBgGradientStyle,
+      qrBgGradientColor1,
+      qrBgGradientColor2,
+      qrCornersGradientStyle,
+      qrCornersGradientColor1,
+      qrCornersGradientColor2,
       width: size,
       height: size
     });
@@ -58,7 +76,7 @@ export default function QRRenderer({
       }
       qrRef.current = null;
     };
-  }, [shortlink, qrColor, qrBgColor, qrStyle, qrCornersStyle, qrCornersDotStyle, qrLogoUrl, qrImageSize, qrImageMargin, qrErrorCorrection, size, onReady]);
+  }, [shortlink, qrColor, qrBgColor, qrStyle, qrCornersStyle, qrCornersDotStyle, qrLogoUrl, qrImageSize, qrImageMargin, qrErrorCorrection, qrGradientStyle, qrGradientColor1, qrGradientColor2, qrBgGradientStyle, qrBgGradientColor1, qrBgGradientColor2, qrCornersGradientStyle, qrCornersGradientColor1, qrCornersGradientColor2, size, onReady]);
 
   return <div ref={containerRef} className="flex items-center justify-center" />;
 }
